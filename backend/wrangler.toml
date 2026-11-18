@@ -1,0 +1,14 @@
+name = "drrcs-phase4-api"
+main = "worker.py"
+compatibility_date = "2026-10-30"
+compatibility_flags = ["python_workers", "disable_python_external_sdk"]
+workers_dev = true
+routes = []
+
+[[d1_databases]]
+binding = "DB"
+database_name = "drrcs-phase4-data"
+database_id = "5ebd6039-d262-4525-bc5c-ab532f6fc332"
+
+[triggers]
+crons = ["* * * * *"]

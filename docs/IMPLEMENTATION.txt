@@ -1,0 +1,178 @@
+DRRCS - IMPLEMENTATION NOTES
+
+FILES
+
+main.py                Starts the Tkinter app.
+app_ui.py              Pages, forms, tables, and button callbacks.
+gui_data.py            Navigation and form/display helpers.
+cloud_api.py           HTTPS requests to the backend.
+backend/app.py         Permissions, validation, and business operations.
+backend/checks.py      Input checks for numbers, locations, and time periods.
+backend/worker.py      HTTP entry point, D1 access, and scheduled tasks.
+backend/passwords.py   Password hash settings and the server pepper step.
+backend/schema.sql    Tables and database protection rules.
+backend/sample_data.json
+                       Classroom sample records.
+gateway/public/_worker.js
+                       Forwards requests to the Python Worker.
+
+
+UC-1 TO UC-11
+
+UC-1   Submit Emergency Report      Backend: report_submit (public, rate-limited per IP)
+                                    UI: Report an emergency (no sign-in)
+UC-2   Check Report Status          Backend: report_status (public-safe fields only)
+                                    UI: Report status
+UC-3   Verify Citizen Report        Backend: citizen_reports, report_matches, report_review
+                                    UI: Citizen reports (create, associate, classify)
+UC-4   Update Incident              Backend: incident_update (responders: description only)
+                                    UI: Incidents, Update incident
+UC-5   Assign Emergency Personnel   Backend: assign_options, assign, assign_escalation
+                                    UI: Incidents, Assign personnel
+UC-6   Submit Field Progress Update Backend: progress
+                                    UI: Incidents, Progress update
+UC-7   Escalate Incident            Backend: escalate
+                                    UI: Incidents, Escalate
+UC-8   Request Additional Resource  Backend: resource_request
+                                    UI: Incidents, Request resources
+UC-9   Allocate Resource            Backend: requests, request_options, allocate, request_decision
+                                    UI: Resource requests
+UC-10  Manage Resource Inventory    Backend: inventory, resource_save, resource_history
+                                    UI: Inventory
+UC-11  Update Shelter Information   Backend: shelter_update
+                                    UI: My shelters, Update shelter information
+
+Citizen reports are stored as kind citizen_reports with IDs like RPT-ABCD2345.
+Incident lifecycle stays Reported -> Assigned -> Responding -> Resolved -> Closed.
+Assignments are Assigned -> Responding -> Complete; closure releases them.
+Requests are Pending, Waiting, Partially Fulfilled, Approved or Denied.
+Resources keep total = available + allocated + consumed.
+Photos are not supported for citizen reports because requests are limited to 32 KB.
+
+
+UC-12 TO UC-24
+
+UC-12  Update Shelter Occupancy
+       Backend: occupancy
+       UI: My shelters, Change occupancy
+       Reference: P2 pages 25-26; P3 Figure 6
+
+UC-13  Search Available Shelters
+       Backend: search_shelters, shelter_detail
+       UI: Shelter search, View details
+       Reference: P2 pages 27-28; P3 Figure 6
+
+UC-14  Manage Emergency Zone
+       Backend: zone_save, impact
+       UI: Emergency areas, Emergency zones
+       Reference: P2 pages 29-30; P3 Figure 7
+
+UC-15  Issue Evacuation Order
+       Backend: order_save, make_notice
+       UI: Emergency areas, Evacuation orders
+       Reference: P2 pages 31-32; P3 Figure 7
+
+UC-16  Record Transportation Restriction
+       Backend: restriction_save, active_restrictions
+       UI: Emergency areas, Road restrictions
+       Reference: P2 pages 33-34; P3 Figure 7
+
+UC-17  Authorize Emergency Notification
+       Backend: notice_save, delivery_result, notice_retry, scheduled
+       UI: Notifications
+       Reference: P2 pages 35-36; P3 Figure 8
+
+UC-18  Resolve and Close Incident
+       Backend: resolve, close, incident_list
+       UI: Incidents, Submit resolution, Close incident
+       Reference: P2 pages 37-38; P3 Figure 4
+
+UC-19  Monitor Emergency Operations
+       Backend: dashboard, source_data
+       UI: Overview
+       Reference: P2 pages 39-40; P3 Figure 9
+
+UC-20  Generate Operational Report
+       Backend: report_create, report_notes, report_finalize
+       UI: Reports, Operational report
+       Reference: P2 pages 41-42; P3 Figure 9
+
+UC-21  Generate After-Action Report
+       Backend: Report methods with After-Action validation
+       UI: Reports, After-action report
+       Reference: P2 pages 43-44; P3 Figure 9
+
+UC-22  Manage User Accounts and Roles
+       Backend: user_save, account_view
+       UI: User accounts
+       Reference: P2 pages 45-46; P3 Figure 10
+
+UC-23  Authenticate User
+       Backend: login, current_user, permit
+       UI: Sign in, Switch account
+       Reference: P2 pages 47-48; P3 Figure 10
+
+UC-24  Log Audit Event
+       Backend: commit, recover_audit
+       UI: Audit history, My alerts
+       Reference: P2 pages 49-50; P3 Figure 11
+
+
+STORAGE AND ACCESS
+
+The desktop client sends commands through the pages.dev API. The Python
+Worker checks access and input, then reads or writes D1. The client does
+not send SQL or keep a local incident database.
+
+Updates use version checks. Record changes, history, and audit writes are
+saved in the same D1 batch. A version conflict rolls back the batch.
+
+Passwords have separate salts, PBKDF2-HMAC-SHA256 at 100,000 iterations,
+and an HMAC step using a Worker-only pepper. Sessions expire after 30 minutes.
+Only token hashes are stored in D1. Account status and roles are read again
+for each protected request. Five failed logins cause a 15-minute cooldown.
+
+Shelter managers and responders are restricted to their assigned records.
+System Administrator is separate from operational roles. Public shelter
+results exclude internal fields; private detail reads are audited.
+
+
+BEHAVIOR TO KEEP WHEN EXTENDING THE PROJECT
+
+Near Capacity starts at 90 percent. Over-capacity intake requires a warning
+and a reason. Planned, Closed, and Temporarily Unavailable shelters cannot
+accept occupancy changes.
+
+Geographic boundaries are rectangles. Distance uses the haversine formula.
+Route impact uses geographic containment/intersection rather than road routing.
+
+Only Emergency Administrators can override open items when closing an incident.
+At least one active System Administrator account must remain.
+
+Draft notices do not take effect. Authorized notices record a result for each
+recipient group. Failed groups can be retried. A server task checks scheduled
+notices once a minute. Delivery is simulated.
+
+Audit and history records are append-only. During an audit adapter outage,
+events go to a queue and the System Administrator is alerted. Recovery keeps
+the original event IDs. A complete D1 outage prevents the business write.
+
+Unavailable dashboard sources are marked as unavailable. An operational
+report with missing sections cannot be finalized. An incomplete after-action
+report needs documented limitations before finalization.
+
+Report incident selection uses creation times in [start, end). Shelter and
+inventory totals are current snapshots. Finalized reports cannot be edited.
+Text/JSON export copies an existing saved report to a local file.
+
+
+TEST RECORDS
+
+test_results/results.html and results.json contain the current backend/API
+test results, including inputs, expected outputs, actual outputs, and branches.
+The tests use an isolated SQLite substitute for D1.
+
+test_results/cloud_verification.json records an earlier real cloud API run.
+The terminal-specific check in that file belongs to the old client.
+
+The desktop interface still needs its full demonstration check for each role.

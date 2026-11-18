@@ -1,0 +1,325 @@
+{
+  "allocations": [
+    {
+      "incident_id": "IN-001",
+      "resource_id": "VEH-001",
+      "quantity": 1,
+      "status": "Active",
+      "id": "AL-001"
+    },
+    {
+      "incident_id": "IN-001",
+      "resource_id": "WATER-001",
+      "quantity": 10,
+      "status": "Active",
+      "id": "AL-002"
+    }
+  ],
+  "assignments": [
+    {
+      "incident_id": "IN-001",
+      "responder": "responder",
+      "status": "Responding",
+      "id": "AS-001"
+    },
+    {
+      "incident_id": "IN-002",
+      "responder": "team-2",
+      "status": "Complete",
+      "id": "AS-002"
+    }
+  ],
+  "incidents": [
+    {
+      "type": "Flood",
+      "area": "Central",
+      "location": [
+        41.88,
+        -87.63
+      ],
+      "severity": 4,
+      "status": "Responding",
+      "created_at": "2026-11-10T14:51:56.992319+00:00",
+      "responded_at": "2026-11-10T15:06:56.992319+00:00",
+      "resolution": {},
+      "description": "Flooded residential building.",
+      "id": "IN-001"
+    },
+    {
+      "type": "Flood",
+      "area": "Central",
+      "location": [
+        41.88,
+        -87.63
+      ],
+      "severity": 2,
+      "status": "Resolved",
+      "created_at": "2026-11-10T14:51:56.992319+00:00",
+      "responded_at": "2026-11-10T15:06:56.992319+00:00",
+      "resolution": {
+        "actions": "Evacuated residents and checked the building.",
+        "outcome": "All occupants accounted for and safe.",
+        "remaining": "None",
+        "completion": "2026-11-10T17:41:56.992319+00:00"
+      },
+      "description": "Flooded residential building.",
+      "id": "IN-002"
+    },
+    {
+      "type": "Flood",
+      "area": "Central",
+      "location": [
+        41.88,
+        -87.63
+      ],
+      "severity": 5,
+      "status": "Reported",
+      "created_at": "2026-11-10T14:51:56.992319+00:00",
+      "responded_at": null,
+      "resolution": {},
+      "description": "Flooded residential building.",
+      "id": "IN-003"
+    }
+  ],
+  "requests": [
+    {
+      "incident_id": "IN-001",
+      "resource_type": "Water",
+      "quantity": 20,
+      "status": "Pending",
+      "created_at": "2026-11-10T14:51:56.992319+00:00",
+      "id": "RQ-001"
+    }
+  ],
+  "resources": [
+    {
+      "name": "Rescue boat",
+      "kind": "Vehicle",
+      "total": 1,
+      "available": 0,
+      "allocated": 1,
+      "consumed": 0,
+      "area": "Central",
+      "id": "VEH-001",
+      "category": "Rescue boats",
+      "status": "Available"
+    },
+    {
+      "name": "Water cases",
+      "kind": "Consumable",
+      "total": 100,
+      "available": 90,
+      "allocated": 10,
+      "consumed": 0,
+      "area": "Central",
+      "id": "WATER-001",
+      "category": "Water",
+      "status": "Available"
+    },
+    {
+      "name": "Water cases (north depot)",
+      "kind": "Consumable",
+      "category": "Water",
+      "total": 30,
+      "available": 30,
+      "allocated": 0,
+      "consumed": 0,
+      "area": "Central",
+      "status": "Available",
+      "id": "WATER-002"
+    },
+    {
+      "name": "First-aid trauma kits",
+      "kind": "Consumable",
+      "category": "Medical supplies",
+      "total": 50,
+      "available": 50,
+      "allocated": 0,
+      "consumed": 0,
+      "area": "Central",
+      "status": "Available",
+      "id": "MED-001"
+    },
+    {
+      "name": "Portable generator",
+      "kind": "Equipment",
+      "category": "Generators",
+      "total": 4,
+      "available": 4,
+      "allocated": 0,
+      "consumed": 0,
+      "area": "Central",
+      "status": "Available",
+      "id": "GEN-001"
+    }
+  ],
+  "responders": [
+    {
+      "status": "Responding",
+      "agency": "Fire Department",
+      "id": "responder",
+      "name": "Responder",
+      "qualifications": [
+        "Firefighting",
+        "EMT",
+        "Water Rescue"
+      ],
+      "location": [
+        41.881,
+        -87.629
+      ]
+    },
+    {
+      "status": "Available",
+      "agency": "Public Works",
+      "id": "team-2",
+      "name": "Public Works Team 2",
+      "qualifications": [
+        "Search and Rescue",
+        "Structural Engineering"
+      ],
+      "location": [
+        41.9,
+        -87.66
+      ]
+    }
+  ],
+  "restrictions": [
+    {
+      "name": "River Road closure",
+      "boundary": [
+        41.87,
+        -87.64,
+        41.89,
+        -87.62
+      ],
+      "start": "2026-11-10T16:51:56.992319+00:00",
+      "end": "2026-11-11T17:51:56.992319+00:00",
+      "status": "Active",
+      "instructions": "River Road closed. Use the northern entrance.",
+      "id": "TR-001"
+    }
+  ],
+  "shelters": [
+    {
+      "name": "Central High School",
+      "location": [
+        41.88,
+        -87.63
+      ],
+      "area": "Central",
+      "occupancy": 85,
+      "capacity": 100,
+      "manager": "shelter",
+      "status": "Open",
+      "medical_support": true,
+      "accessibility": "Wheelchair accessible",
+      "public_contact": "312-555-0100",
+      "internal_contact": "Internal desk extension 204",
+      "supplies": {
+        "food": 200,
+        "water": 400
+      },
+      "id": "SH-001"
+    },
+    {
+      "name": "North Community Center",
+      "location": [
+        41.95,
+        -87.65
+      ],
+      "area": "Central",
+      "occupancy": 30,
+      "capacity": 80,
+      "manager": "other-manager",
+      "status": "Open",
+      "medical_support": true,
+      "accessibility": "Wheelchair accessible",
+      "public_contact": "312-555-0100",
+      "internal_contact": "Internal desk extension 204",
+      "supplies": {
+        "food": 200,
+        "water": 400
+      },
+      "id": "SH-002"
+    },
+    {
+      "name": "Closed Sports Hall",
+      "location": [
+        41.89,
+        -87.62
+      ],
+      "area": "Central",
+      "occupancy": 0,
+      "capacity": 120,
+      "manager": "shelter",
+      "status": "Closed",
+      "medical_support": true,
+      "accessibility": "Wheelchair accessible",
+      "public_contact": "312-555-0100",
+      "internal_contact": "Internal desk extension 204",
+      "supplies": {
+        "food": 200,
+        "water": 400
+      },
+      "id": "SH-003"
+    }
+  ],
+  "zones": [
+    {
+      "name": "Central flood zone",
+      "area": "Central",
+      "boundary": [
+        41.8,
+        -87.8,
+        42.0,
+        -87.5
+      ],
+      "emergency_type": "Flood",
+      "severity": 4,
+      "status": "Active",
+      "instructions": "Avoid flooded roads and move to higher ground.",
+      "start": "2026-11-09T17:51:56.992319+00:00",
+      "end": "2027-11-10T17:51:57.988905+00:00",
+      "created_at": "2026-11-10T14:51:56.992319+00:00",
+      "justification": "",
+      "id": "ZN-001"
+    }
+  ],
+  "citizen_reports": [
+    {
+      "type": "Flood",
+      "address": "River Road near the bridge",
+      "location": [
+        41.8805,
+        -87.6305
+      ],
+      "description": "Water is rising fast and a car is stuck on River Road.",
+      "severity": 4,
+      "occurred_at": "2026-11-10T14:40:00+00:00",
+      "contact_name": "Ana Ruiz",
+      "contact_phone": "312-555-0142",
+      "status": "Submitted",
+      "submitted_at": "2026-11-10T14:51:56.992319+00:00",
+      "incident_id": null,
+      "id": "RPT-DEMA2345"
+    },
+    {
+      "type": "Hazard",
+      "address": "Lake St and Wells St",
+      "location": [
+        41.8857,
+        -87.6339
+      ],
+      "description": "A tree fell on power lines and the lines are lying on the street.",
+      "severity": 3,
+      "occurred_at": "2026-11-10T14:45:00+00:00",
+      "contact_name": "",
+      "contact_phone": "",
+      "status": "Submitted",
+      "submitted_at": "2026-11-10T14:51:56.992319+00:00",
+      "incident_id": null,
+      "id": "RPT-DEMB6789"
+    }
+  ]
+}

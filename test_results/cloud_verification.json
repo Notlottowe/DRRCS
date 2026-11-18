@@ -1,0 +1,133 @@
+{
+  "run_at_utc": "2026-11-10T18:31:37.650356+00:00",
+  "api_url": "https://drrcs-cloud-console.pages.dev",
+  "checks": [
+    {
+      "name": "Worker health",
+      "status": "PASS",
+      "actual": {
+        "service": "DRRCS",
+        "storage": "Cloudflare D1",
+        "version": "terminal-1"
+      }
+    },
+    {
+      "name": "API rejects missing project key",
+      "status": "PASS",
+      "actual": {
+        "http_status": 401
+      }
+    },
+    {
+      "name": "Public search excludes private fields",
+      "status": "PASS",
+      "actual": [
+        {
+          "id": "SH-001",
+          "name": "Central High School"
+        },
+        {
+          "id": "SH-002",
+          "name": "North Community Center"
+        }
+      ]
+    },
+    {
+      "name": "Record a new incident in the backend",
+      "status": "PASS",
+      "actual": {
+        "id": "IN-CA67EA",
+        "status": "Reported"
+      }
+    },
+    {
+      "name": "Separate login retrieves the saved incident",
+      "status": "PASS",
+      "actual": {
+        "id": "IN-CA67EA",
+        "description": "Deployment verification: synthetic flooded road. This is classroom sample data."
+      }
+    },
+    {
+      "name": "Incident history retained",
+      "status": "PASS",
+      "actual": {
+        "id": "IN-CA67EA",
+        "history_records": 1
+      }
+    },
+    {
+      "name": "Cloud backend enforces role scope",
+      "status": "PASS",
+      "actual": {
+        "denied": "Your role cannot perform incidents.",
+        "scope": [
+          "resources",
+          "allocations",
+          "requests"
+        ]
+      }
+    },
+    {
+      "name": "Wrong input rejected by cloud backend",
+      "status": "PASS",
+      "actual": {
+        "message": "Occupancy change must be a whole number."
+      }
+    },
+    {
+      "name": "Atomic shelter writes persisted; count restored",
+      "status": "PASS",
+      "actual": {
+        "occupancy": 85,
+        "version_before": 1,
+        "version_after": 3
+      }
+    },
+    {
+      "name": "Cloud report draft finalized",
+      "status": "PASS",
+      "actual": {
+        "id": "RP-05DC43",
+        "status": "Finalized"
+      }
+    },
+    {
+      "name": "Finalized cloud report rejects edits",
+      "status": "PASS",
+      "actual": {
+        "message": "Finalized reports cannot be edited."
+      }
+    },
+    {
+      "name": "Cloud audit contains the new event",
+      "status": "PASS",
+      "actual": {
+        "incident_id": "IN-CA67EA",
+        "audit_events_returned": 12
+      }
+    },
+    {
+      "name": "Cloud logout revokes session",
+      "status": "PASS",
+      "actual": {
+        "message": "Your session expired or account is inactive. Log in again."
+      }
+    },
+    {
+      "name": "Real terminal program logs in and lists the cloud event",
+      "status": "PASS",
+      "actual": {
+        "incident_id": "IN-CA67EA",
+        "exit_code": 0
+      }
+    }
+  ],
+  "incident_id": "IN-CA67EA",
+  "report_id": "RP-05DC43",
+  "passed": 14,
+  "direct_remote_d1_readback": {
+    "id": "IN-CA67EA",
+    "description": "Deployment verification: synthetic flooded road. This is classroom sample data."
+  }
+}

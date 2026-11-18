@@ -1,0 +1,5961 @@
+{
+  "run_at_utc": "2026-11-12T04:01:17.007271+00:00",
+  "tests": 80,
+  "passed": 80,
+  "failed": 0,
+  "results": [
+    {
+      "test_name": "test_cloud_event_record",
+      "use_case": "Cloud persistence",
+      "description": "Record a new event and query through a separate backend session",
+      "input": "Dispatcher creates event; new Backend logs in and lists incidents",
+      "expected_output": "Same ID and description returned from shared database; history retained",
+      "white_box_branch": "incident_add writes server database, never client storage",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "type": "Flood",
+          "description": "Synthetic test event: flooded road near the bridge.",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "area": "Central",
+          "severity": 3,
+          "status": "Reported",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "responded_at": null,
+          "resolution": {},
+          "id": "IN-C6D2F5",
+          "version": 1
+        },
+        {
+          "type": "Flood",
+          "description": "Synthetic test event: flooded road near the bridge.",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "area": "Central",
+          "severity": 3,
+          "status": "Reported",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "responded_at": null,
+          "resolution": {},
+          "id": "IN-C6D2F5",
+          "version": 1,
+          "restrictions": [
+            {
+              "name": "River Road closure",
+              "boundary": [
+                41.87,
+                -87.64,
+                41.89,
+                -87.62
+              ],
+              "start": "2026-11-11T04:01:14.746685+00:00",
+              "end": "2027-11-12T04:01:14.746685+00:00",
+              "status": "Active",
+              "instructions": "River Road closed. Use the northern entrance.",
+              "id": "TR-001",
+              "version": 1
+            }
+          ]
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_permission_matrix",
+      "use_case": "Security matrix",
+      "description": "Test every role against every protected operation",
+      "input": "6 roles times all named operation permissions",
+      "expected_output": "Exactly the documented permissions allowed; technical/operational roles separated",
+      "white_box_branch": "Permission Check Logic full role-operation matrix",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "role": "Emergency Administrator",
+          "allowed": [
+            "close",
+            "dashboard",
+            "incidents",
+            "notices",
+            "orders",
+            "override",
+            "reports",
+            "restrictions",
+            "shelter_private",
+            "zones"
+          ]
+        },
+        {
+          "role": "System Administrator",
+          "allowed": [
+            "audit",
+            "fault",
+            "users"
+          ]
+        },
+        {
+          "role": "Dispatcher",
+          "allowed": [
+            "assign",
+            "citizen_reports",
+            "close",
+            "dashboard",
+            "incident_add",
+            "incident_update",
+            "incidents",
+            "shelter_private"
+          ]
+        },
+        {
+          "role": "First Responder",
+          "allowed": [
+            "escalate",
+            "incident_update",
+            "incidents",
+            "progress",
+            "resolve",
+            "resource_request",
+            "shelter_private"
+          ]
+        },
+        {
+          "role": "Resource Coordinator",
+          "allowed": [
+            "dashboard",
+            "inventory",
+            "requests",
+            "shelter_private"
+          ]
+        },
+        {
+          "role": "Shelter Manager",
+          "allowed": [
+            "dashboard",
+            "occupancy",
+            "shelter_private",
+            "shelter_update"
+          ]
+        },
+        {
+          "error": "AUTHENTICATION",
+          "message": "Log in first: login <username>"
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc12_invalid",
+      "use_case": "UC-12",
+      "description": "Reject negative and gibberish counts",
+      "input": "-86, abc, 1.5, NaN, True, SQL text",
+      "expected_output": "All rejected; occupancy remains 85",
+      "white_box_branch": "L2.4A and numeric validation",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Occupancy cannot be negative."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Occupancy change must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Occupancy change must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Occupancy change must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Occupancy change must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Occupancy change must be a whole number."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc12_overcapacity",
+      "use_case": "UC-12",
+      "description": "Preview over-capacity before recording a reason",
+      "input": "SH-001 +20 preview, then save with/without reason",
+      "expected_output": "Preview does not write; missing reason rejected; justified 105 becomes Full",
+      "white_box_branch": "L2.4B and L3 justification",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "id": "SH-001",
+          "before": 85,
+          "after": 105,
+          "capacity": 100,
+          "status": "Full",
+          "version": 1,
+          "warning": "OVER CAPACITY. Give a reason to confirm."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Over-capacity reason must contain 10 to 2000 characters."
+        },
+        {
+          "name": "Central High School",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "area": "Central",
+          "occupancy": 105,
+          "capacity": 100,
+          "manager": "shelter",
+          "status": "Full",
+          "medical_support": true,
+          "accessibility": "Wheelchair accessible",
+          "public_contact": "312-555-0100",
+          "internal_contact": "Internal desk extension 204",
+          "supplies": {
+            "food": 200,
+            "water": 400
+          },
+          "id": "SH-001",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc12_scope_conflict",
+      "use_case": "UC-12",
+      "description": "Check assignment, open status and stale versions",
+      "input": "Another manager's shelter; closed shelter; two writes using v1",
+      "expected_output": "Assignment/closed requests denied; second stale write conflicts without extra history",
+      "white_box_branch": "L1 guards and D1 batch version check",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "FORBIDDEN",
+          "message": "This shelter is not assigned to you."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "The shelter is not open."
+        },
+        {
+          "name": "Central High School",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "area": "Central",
+          "occupancy": 90,
+          "capacity": 100,
+          "manager": "shelter",
+          "status": "Near Capacity",
+          "medical_support": true,
+          "accessibility": "Wheelchair accessible",
+          "public_contact": "312-555-0100",
+          "internal_contact": "Internal desk extension 204",
+          "supplies": {
+            "food": 200,
+            "water": 400
+          },
+          "id": "SH-001",
+          "version": 2
+        },
+        {
+          "error": "CONFLICT",
+          "message": "Record changed or ID already exists. Reload and try again."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc12_threshold",
+      "use_case": "UC-12",
+      "description": "Reach shelter threshold with an atomic delta",
+      "input": "SH-001, +5, version 1",
+      "expected_output": "90 occupants, Near Capacity, history and administrator alert",
+      "white_box_branch": "L2 valid; L3 threshold reached",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "name": "Central High School",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "area": "Central",
+          "occupancy": 90,
+          "capacity": 100,
+          "manager": "shelter",
+          "status": "Near Capacity",
+          "medical_support": true,
+          "accessibility": "Wheelchair accessible",
+          "public_contact": "312-555-0100",
+          "internal_contact": "Internal desk extension 204",
+          "supplies": {
+            "food": 200,
+            "water": 400
+          },
+          "id": "SH-001",
+          "version": 2
+        },
+        [
+          {
+            "id": 1,
+            "recipient": "Emergency Administrator",
+            "created_at": "2026-11-12T04:01:14.746685+00:00",
+            "message": "SH-001 reached Near Capacity: 90/100."
+          }
+        ]
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc13_invalid_empty",
+      "use_case": "UC-13",
+      "description": "Check search errors and no matches",
+      "input": "NaN coordinates, invalid status, minimum spaces 100000",
+      "expected_output": "Invalid criteria rejected; valid unmatched criteria return empty list",
+      "white_box_branch": "M2.4A Unusable Location; M2.10B No Match",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Latitude must be between -90 and 90."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Latitude must be between -90 and 90."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Status must be Any, Open, Near Capacity or Full."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Radius must be between 0.1 and 20000."
+        },
+        []
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc13_private",
+      "use_case": "UC-13",
+      "description": "Authorize and audit private detail",
+      "input": "Dispatcher private SH-001; guest private; unassigned shelter manager",
+      "expected_output": "Dispatcher sees supplies; guest/unassigned denied; public detail shows restrictions only",
+      "white_box_branch": "M3A Restricted Detail",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "id": "SH-001",
+          "name": "Central High School",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "capacity": 100,
+          "occupancy": 85,
+          "status": "Open",
+          "medical_support": true,
+          "accessibility": "Wheelchair accessible",
+          "public_contact": "312-555-0100",
+          "version": 1,
+          "restrictions": [
+            {
+              "name": "River Road closure",
+              "boundary": [
+                41.87,
+                -87.64,
+                41.89,
+                -87.62
+              ],
+              "start": "2026-11-11T04:01:14.746685+00:00",
+              "end": "2027-11-12T04:01:14.746685+00:00",
+              "status": "Active",
+              "instructions": "River Road closed. Use the northern entrance.",
+              "id": "TR-001",
+              "version": 1
+            }
+          ]
+        },
+        {
+          "id": "SH-001",
+          "name": "Central High School",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "capacity": 100,
+          "occupancy": 85,
+          "status": "Open",
+          "medical_support": true,
+          "accessibility": "Wheelchair accessible",
+          "public_contact": "312-555-0100",
+          "version": 1,
+          "restrictions": [
+            {
+              "name": "River Road closure",
+              "boundary": [
+                41.87,
+                -87.64,
+                41.89,
+                -87.62
+              ],
+              "start": "2026-11-11T04:01:14.746685+00:00",
+              "end": "2027-11-12T04:01:14.746685+00:00",
+              "status": "Active",
+              "instructions": "River Road closed. Use the northern entrance.",
+              "id": "TR-001",
+              "version": 1
+            }
+          ],
+          "manager": "shelter",
+          "supplies": {
+            "food": 200,
+            "water": 400
+          },
+          "internal_contact": "Internal desk extension 204"
+        },
+        {
+          "error": "AUTHENTICATION",
+          "message": "Log in first: login <username>"
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "This shelter is not assigned to you."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc13_public",
+      "use_case": "UC-13",
+      "description": "Search public shelters ranked by distance",
+      "input": "Public location 41.88,-87.63",
+      "expected_output": "SH-001 then SH-002; private fields and closed shelter excluded",
+      "white_box_branch": "M2 valid and ranking/public projection",
+      "status": "PASS",
+      "actual_output": [
+        [
+          {
+            "id": "SH-001",
+            "name": "Central High School",
+            "location": [
+              41.88,
+              -87.63
+            ],
+            "capacity": 100,
+            "occupancy": 85,
+            "status": "Open",
+            "medical_support": true,
+            "accessibility": "Wheelchair accessible",
+            "public_contact": "312-555-0100",
+            "version": 1,
+            "distance_km": 0.0,
+            "available_spaces": 15
+          },
+          {
+            "id": "SH-002",
+            "name": "North Community Center",
+            "location": [
+              41.95,
+              -87.65
+            ],
+            "capacity": 80,
+            "occupancy": 30,
+            "status": "Open",
+            "medical_support": true,
+            "accessibility": "Wheelchair accessible",
+            "public_contact": "312-555-0100",
+            "version": 1,
+            "distance_km": 7.96,
+            "available_spaces": 50
+          }
+        ]
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc14_invalid_conflict",
+      "use_case": "UC-14",
+      "description": "Reject invalid boundaries/times and require overlap justification",
+      "input": "Reversed rectangle/time; overlapping ZN-001 with empty then valid reason",
+      "expected_output": "Invalid/conflicting writes blocked; justified overlap saved",
+      "white_box_branch": "N3.4A Invalid; N3.4B Conflict",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Boundary must have south < north and west < east."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "End time must be after start time."
+        },
+        {
+          "zone": {
+            "id": "ZN-61BF1D",
+            "name": "West flood zone",
+            "boundary": [
+              41.85,
+              -87.7,
+              41.95,
+              -87.6
+            ],
+            "area": "Central",
+            "emergency_type": "Flood",
+            "severity": 4,
+            "status": "Active",
+            "start": "2026-11-12T03:01:14.746685+00:00",
+            "end": "2026-11-12T05:01:14.746685+00:00",
+            "instructions": "Move to higher ground and avoid flooded roads.",
+            "created_at": "2026-11-12T04:01:14.746685+00:00"
+          },
+          "conflicts": [
+            "ZN-001"
+          ],
+          "affected_operations": {
+            "incidents": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ],
+            "shelters": [
+              "SH-001",
+              "SH-002"
+            ],
+            "zones": [
+              "ZN-001"
+            ]
+          }
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Overlap justification must contain 10 to 2000 characters."
+        },
+        {
+          "name": "West flood zone",
+          "boundary": [
+            41.85,
+            -87.7,
+            41.95,
+            -87.6
+          ],
+          "area": "Central",
+          "emergency_type": "Flood",
+          "severity": 4,
+          "status": "Active",
+          "start": "2026-11-12T03:01:14.746685+00:00",
+          "end": "2026-11-12T05:01:14.746685+00:00",
+          "instructions": "Move to higher ground and avoid flooded roads.",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "justification": "Separate rescue area inside the larger zone.",
+          "id": "ZN-2E682A",
+          "version": 1
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc14_versions",
+      "use_case": "UC-14",
+      "description": "Create a zone and retain successive versions",
+      "input": "Non-overlapping zone then edit v1",
+      "expected_output": "Same ID v2; history and dispatcher/responder notices",
+      "white_box_branch": "N4 save and publish new zone version",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "name": "West flood zone",
+          "boundary": [
+            41.7,
+            -87.9,
+            41.79,
+            -87.81
+          ],
+          "area": "Central",
+          "emergency_type": "Flood",
+          "severity": 4,
+          "status": "Active",
+          "start": "2026-11-12T03:01:14.746685+00:00",
+          "end": "2026-11-12T05:01:14.746685+00:00",
+          "instructions": "Move to higher ground and avoid flooded roads.",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "justification": "",
+          "id": "ZN-12A57A",
+          "version": 1
+        },
+        {
+          "name": "West flood zone",
+          "boundary": [
+            41.7,
+            -87.9,
+            41.79,
+            -87.81
+          ],
+          "area": "Central",
+          "emergency_type": "Flood",
+          "severity": 4,
+          "status": "Active",
+          "start": "2026-11-12T03:01:14.746685+00:00",
+          "end": "2026-11-12T05:01:14.746685+00:00",
+          "instructions": "Use the northern road and avoid flooded areas.",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "justification": "",
+          "id": "ZN-12A57A",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc15_draft_authorize",
+      "use_case": "UC-15",
+      "description": "Keep a draft non-effective and authorize the same order",
+      "input": "Order Draft then ID/version authorization",
+      "expected_output": "No notice for Draft; same order Authorized with Delivered notice",
+      "white_box_branch": "O4A Draft; O4 include UC-17",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "zone_id": "ZN-001",
+          "area": "Central",
+          "effective": "2026-11-12T03:01:14.746685+00:00",
+          "end": "2026-11-12T05:01:14.746685+00:00",
+          "instructions": "Evacuate using the northern road to Central High School.",
+          "status": "Draft",
+          "authorized_by": null,
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "delivery_status": "Not sent",
+          "notification_id": null,
+          "id": "EO-7850A6",
+          "version": 1
+        },
+        {
+          "zone_id": "ZN-001",
+          "area": "Central",
+          "effective": "2026-11-12T03:01:14.746685+00:00",
+          "end": "2026-11-12T05:01:14.746685+00:00",
+          "instructions": "Evacuate using the northern road to Central High School.",
+          "status": "Authorized",
+          "authorized_by": "admin",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "delivery_status": "Delivered",
+          "notification_id": "NT-B516B3",
+          "id": "EO-7850A6",
+          "version": 2
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Authorized orders are retained; issue a new order for a change."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc15_invalid_failure",
+      "use_case": "UC-15",
+      "description": "Reject invalid area/time and retain order during delivery failure",
+      "input": "Empty area; time beyond zone; both delivery groups fail",
+      "expected_output": "Invalid data rejected; failed order and delivery status retained with administrator alert",
+      "white_box_branch": "O3.4A Invalid; O4.12A Delivery Failed",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Affected area must contain 2 to 200 characters."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Order must use an active zone and times within its period."
+        },
+        {
+          "fault": "delivery_failure:Citizens",
+          "enabled": true,
+          "recovered": 0
+        },
+        {
+          "fault": "delivery_failure:Emergency Personnel",
+          "enabled": true,
+          "recovered": 0
+        },
+        {
+          "zone_id": "ZN-001",
+          "area": "Central",
+          "effective": "2026-11-12T03:01:14.746685+00:00",
+          "end": "2026-11-12T05:01:14.746685+00:00",
+          "instructions": "Evacuate using the northern road to Central High School.",
+          "status": "Authorized",
+          "authorized_by": "admin",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "delivery_status": "Failed",
+          "notification_id": "NT-FCAFD7",
+          "id": "EO-5A48C6",
+          "version": 1
+        },
+        [
+          {
+            "id": 1,
+            "recipient": "Emergency Administrator",
+            "created_at": "2026-11-12T04:01:14.746685+00:00",
+            "message": "Notification NT-FCAFD7: Failed."
+          }
+        ]
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc16_impact",
+      "use_case": "UC-16",
+      "description": "Record restrictions with route impact and version history",
+      "input": "Restriction covering SH-001 and IN-001 then deactivate",
+      "expected_output": "Affected operations previewed; dispatcher warned; v2 history retained",
+      "white_box_branch": "P3.6B Route Affected; P4 new version",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "restriction": {
+            "id": "TR-C462F3",
+            "name": "Main Road closure",
+            "boundary": [
+              41.87,
+              -87.64,
+              41.89,
+              -87.62
+            ],
+            "start": "2026-11-12T03:01:14.746685+00:00",
+            "end": "2026-11-12T05:01:14.746685+00:00",
+            "instructions": "Use the northern entrance and avoid Main Road.",
+            "status": "Active"
+          },
+          "affected_operations": {
+            "incidents": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ],
+            "shelters": [
+              "SH-001"
+            ],
+            "zones": [
+              "ZN-001"
+            ]
+          }
+        },
+        {
+          "name": "Main Road closure",
+          "boundary": [
+            41.87,
+            -87.64,
+            41.89,
+            -87.62
+          ],
+          "start": "2026-11-12T03:01:14.746685+00:00",
+          "end": "2026-11-12T05:01:14.746685+00:00",
+          "instructions": "Use the northern entrance and avoid Main Road.",
+          "status": "Active",
+          "id": "TR-D7541D",
+          "version": 1
+        },
+        {
+          "name": "Main Road closure",
+          "boundary": [
+            41.87,
+            -87.64,
+            41.89,
+            -87.62
+          ],
+          "start": "2026-11-12T03:01:14.746685+00:00",
+          "end": "2026-11-12T05:01:14.746685+00:00",
+          "instructions": "Use the northern entrance and avoid Main Road.",
+          "status": "Inactive",
+          "id": "TR-D7541D",
+          "version": 2
+        },
+        [
+          {
+            "id": 1,
+            "recipient": "Dispatcher",
+            "created_at": "2026-11-12T04:01:14.746685+00:00",
+            "message": "Route affected by TR-D7541D: {'incidents': ['IN-001', 'IN-002', 'IN-003'], 'shelters': ['SH-001'], 'zones': ['ZN-001']}"
+          }
+        ],
+        {
+          "error": "INVALID_INPUT",
+          "message": "Boundary must be south,west,north,east."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc17_draft_invalid",
+      "use_case": "UC-17",
+      "description": "Store drafts without delivery and reject invalid notice fields",
+      "input": "Draft; invalid message/priority/audience/time",
+      "expected_output": "Draft has no authorizer or delivery; invalid inputs rejected",
+      "white_box_branch": "Q4A Draft; Q3.4A Invalid",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "message": "Flood warning. Move to higher ground immediately.",
+          "area": "Central",
+          "priority": "Critical",
+          "groups": [
+            "Citizens",
+            "Emergency Personnel"
+          ],
+          "effective": "2026-11-12T03:01:14.746685+00:00",
+          "status": "Draft",
+          "authorized_by": null,
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "delivery": {},
+          "order_id": null,
+          "expires": null,
+          "id": "NT-0AFC6A",
+          "version": 1
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Message must contain 10 to 2000 characters."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Priority must be Informational, Urgent or Critical."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Audience must be Citizens and/or Emergency Personnel."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Effective time: use YYYY-MM-DDTHH:MM:SS+00:00."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc17_expired_order",
+      "use_case": "UC-17",
+      "description": "Expire an evacuation notice rather than sending it late",
+      "input": "Scheduled order; scheduler runs after end time",
+      "expected_output": "Expired with empty delivery; order status synchronized",
+      "white_box_branch": "effective/end-time guard",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "zone_id": "ZN-001",
+          "area": "Central",
+          "effective": "2026-11-12T04:06:14.746685+00:00",
+          "end": "2026-11-12T05:01:14.746685+00:00",
+          "instructions": "Evacuate using the northern road to Central High School.",
+          "status": "Authorized",
+          "authorized_by": "admin",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "delivery_status": "Scheduled",
+          "notification_id": "NT-920C11",
+          "id": "EO-28AB0C",
+          "version": 1
+        },
+        {
+          "recovered_audit_events": 0,
+          "due_notices_processed": 1
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc17_partial_retry",
+      "use_case": "UC-17",
+      "description": "Record partial failure and retry failed groups",
+      "input": "Citizens delivery fault on, notice, fault off, retry",
+      "expected_output": "Partial Failure then Delivered; personnel success preserved",
+      "white_box_branch": "Q4.10A Partial Failure",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "fault": "delivery_failure:Citizens",
+          "enabled": true,
+          "recovered": 0
+        },
+        {
+          "message": "Flood warning. Move to higher ground immediately.",
+          "area": "Central",
+          "priority": "Critical",
+          "groups": [
+            "Citizens",
+            "Emergency Personnel"
+          ],
+          "effective": "2026-11-12T03:01:14.746685+00:00",
+          "status": "Partial Failure",
+          "authorized_by": "admin",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "delivery": {
+            "Citizens": "Failed",
+            "Emergency Personnel": "Delivered"
+          },
+          "order_id": null,
+          "expires": null,
+          "delivered_at": "2026-11-12T04:01:14.746685+00:00",
+          "id": "NT-DE3C44",
+          "version": 1
+        },
+        {
+          "fault": "delivery_failure:Citizens",
+          "enabled": false,
+          "recovered": 0
+        },
+        {
+          "message": "Flood warning. Move to higher ground immediately.",
+          "area": "Central",
+          "priority": "Critical",
+          "groups": [
+            "Citizens",
+            "Emergency Personnel"
+          ],
+          "effective": "2026-11-12T03:01:14.746685+00:00",
+          "status": "Delivered",
+          "authorized_by": "admin",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "delivery": {
+            "Citizens": "Delivered",
+            "Emergency Personnel": "Delivered"
+          },
+          "order_id": null,
+          "expires": null,
+          "delivered_at": "2026-11-12T04:01:14.746685+00:00",
+          "id": "NT-DE3C44",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc17_scheduled",
+      "use_case": "UC-17",
+      "description": "Deliver due notices from the scheduler without an open client",
+      "input": "Authorized notice effective in 5 minutes; advance clock 6 minutes",
+      "expected_output": "Scheduled first; server scheduler delivers once; second tick does nothing",
+      "white_box_branch": "Q4 scheduled server delivery",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "message": "Flood warning. Move to higher ground immediately.",
+          "area": "Central",
+          "priority": "Critical",
+          "groups": [
+            "Citizens",
+            "Emergency Personnel"
+          ],
+          "effective": "2026-11-12T04:06:14.746685+00:00",
+          "status": "Scheduled",
+          "authorized_by": "admin",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "delivery": {},
+          "order_id": null,
+          "expires": null,
+          "id": "NT-3BF34B",
+          "version": 1
+        },
+        {
+          "recovered_audit_events": 0,
+          "due_notices_processed": 1
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc18_batch_rollback",
+      "use_case": "UC-18",
+      "description": "Rollback a whole D1-style batch on a stale resource version",
+      "input": "Two changes in one batch; second expected version is wrong",
+      "expected_output": "No incident update, audit or history committed",
+      "white_box_branch": "D1 batch CHECK guard and rollback",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Responding",
+          "created_at": "2026-11-12T01:01:14.746685+00:00",
+          "responded_at": "2026-11-12T01:16:14.746685+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "id": "IN-001",
+          "version": 1
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc18_close",
+      "use_case": "UC-18",
+      "description": "Close a documented resolved incident",
+      "input": "Dispatcher closes IN-002",
+      "expected_output": "Closed; team assignment Released; history retained",
+      "white_box_branch": "R4 ready; R5 release and close",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 2,
+          "status": "Closed",
+          "created_at": "2026-11-12T01:01:14.746685+00:00",
+          "responded_at": "2026-11-12T01:16:14.746685+00:00",
+          "resolution": {
+            "actions": "Evacuated residents and checked the building.",
+            "outcome": "All occupants accounted for and safe.",
+            "remaining": "None",
+            "completion": "2026-11-12T03:51:14.746685+00:00"
+          },
+          "description": "Flooded residential building.",
+          "final_notes": "All documentation reviewed and work completed.",
+          "closed_at": "2026-11-12T04:01:14.746685+00:00",
+          "override_reason": "",
+          "id": "IN-002",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc18_missing_documentation",
+      "use_case": "UC-18",
+      "description": "Enforce resolution and documentation before closure",
+      "input": "Responding IN-001; Resolved IN-002 with missing resolution",
+      "expected_output": "Both closures blocked without changes",
+      "white_box_branch": "Resolved prerequisite; R4.4A Documentation Missing",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Resolve the incident before closing it."
+        },
+        {
+          "error": "MISSING_DOCUMENTATION",
+          "message": "Resolution documentation is missing."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc18_override",
+      "use_case": "UC-18",
+      "description": "Require an authorized override and release reusable resources only",
+      "input": "Resolve IN-001; dispatcher override denied; admin closes with reason",
+      "expected_output": "Boat returns; water stays 90 available/10 consumed; open request cancellation recorded",
+      "white_box_branch": "R4.4B Open Items; R5 authorized override",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Resolved",
+          "created_at": "2026-11-12T01:01:14.746685+00:00",
+          "responded_at": "2026-11-12T01:16:14.746685+00:00",
+          "resolution": {
+            "actions": "Evacuated residents and secured the flooded building.",
+            "outcome": "All residents are safe and immediate danger is addressed.",
+            "remaining": "None",
+            "completion": "2026-11-12T04:00:14.746685+00:00"
+          },
+          "description": "Flooded residential building.",
+          "resolved_at": "2026-11-12T04:00:14.746685+00:00",
+          "id": "IN-001",
+          "version": 2
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "Your role cannot perform override."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Override reason must contain 10 to 2000 characters."
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Closed",
+          "created_at": "2026-11-12T01:01:14.746685+00:00",
+          "responded_at": "2026-11-12T01:16:14.746685+00:00",
+          "resolution": {
+            "actions": "Evacuated residents and secured the flooded building.",
+            "outcome": "All residents are safe and immediate danger is addressed.",
+            "remaining": "None",
+            "completion": "2026-11-12T04:00:14.746685+00:00"
+          },
+          "description": "Flooded residential building.",
+          "resolved_at": "2026-11-12T04:00:14.746685+00:00",
+          "final_notes": "Reviewed all documentation.",
+          "closed_at": "2026-11-12T04:01:14.746685+00:00",
+          "override_reason": "The water request is no longer needed after rescue.",
+          "id": "IN-001",
+          "version": 3
+        },
+        {
+          "boat": {
+            "name": "Rescue boat",
+            "kind": "Vehicle",
+            "total": 1,
+            "available": 1,
+            "allocated": 0,
+            "consumed": 0,
+            "area": "Central",
+            "category": "Rescue boats",
+            "status": "Available",
+            "id": "VEH-001",
+            "version": 2
+          },
+          "water": {
+            "name": "Water cases",
+            "kind": "Consumable",
+            "total": 100,
+            "available": 90,
+            "allocated": 0,
+            "consumed": 10,
+            "area": "Central",
+            "category": "Water",
+            "status": "Available",
+            "id": "WATER-001",
+            "version": 2
+          }
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc18_resolution",
+      "use_case": "UC-18",
+      "description": "Resolve an assigned incident and reject incomplete/unassigned inputs",
+      "input": "Missing actions; unassigned IN-003; complete IN-001 resolution",
+      "expected_output": "Invalid/unauthorized attempts rejected; complete resolution saved with history",
+      "white_box_branch": "R2.4A incomplete; R1 assignment; R2 main",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Actions taken must contain 10 to 2000 characters."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "You are not actively assigned to this incident."
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Resolved",
+          "created_at": "2026-11-12T01:01:14.746685+00:00",
+          "responded_at": "2026-11-12T01:16:14.746685+00:00",
+          "resolution": {
+            "actions": "Evacuated residents and secured the flooded building.",
+            "outcome": "All residents are safe and immediate danger is addressed.",
+            "remaining": "None",
+            "completion": "2026-11-12T04:00:14.746685+00:00"
+          },
+          "description": "Flooded residential building.",
+          "resolved_at": "2026-11-12T04:00:14.746685+00:00",
+          "id": "IN-001",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc19_full",
+      "use_case": "UC-19",
+      "description": "Calculate full dashboard indicators",
+      "input": "Admin baseline data",
+      "expected_output": "2 active, 2 critical, 1 unassigned, 1 pending request and shelter/vehicle/team totals",
+      "white_box_branch": "S1 scope; S2 indicator algorithm",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "as_of": "2026-11-12T04:01:14.746685+00:00",
+          "scope": [
+            "incidents",
+            "responders",
+            "assignments",
+            "resources",
+            "allocations",
+            "requests",
+            "shelters",
+            "zones",
+            "orders"
+          ],
+          "unavailable_sources": [],
+          "active_incidents": 2,
+          "critical_incidents": 2,
+          "incidents_by_severity": {
+            "4": 1,
+            "2": 1,
+            "5": 1
+          },
+          "unassigned_incidents": 1,
+          "unresolved_conditions": 2,
+          "resources": [
+            {
+              "name": "Portable generator",
+              "kind": "Equipment",
+              "category": "Generators",
+              "total": 4,
+              "available": 4,
+              "allocated": 0,
+              "consumed": 0,
+              "area": "Central",
+              "status": "Available",
+              "id": "GEN-001",
+              "version": 1
+            },
+            {
+              "name": "First-aid trauma kits",
+              "kind": "Consumable",
+              "category": "Medical supplies",
+              "total": 50,
+              "available": 50,
+              "allocated": 0,
+              "consumed": 0,
+              "area": "Central",
+              "status": "Available",
+              "id": "MED-001",
+              "version": 1
+            },
+            {
+              "name": "Rescue boat",
+              "kind": "Vehicle",
+              "total": 1,
+              "available": 0,
+              "allocated": 1,
+              "consumed": 0,
+              "area": "Central",
+              "category": "Rescue boats",
+              "status": "Available",
+              "id": "VEH-001",
+              "version": 1
+            },
+            {
+              "name": "Water cases",
+              "kind": "Consumable",
+              "total": 100,
+              "available": 90,
+              "allocated": 10,
+              "consumed": 0,
+              "area": "Central",
+              "category": "Water",
+              "status": "Available",
+              "id": "WATER-001",
+              "version": 1
+            },
+            {
+              "name": "Water cases (north depot)",
+              "kind": "Consumable",
+              "category": "Water",
+              "total": 30,
+              "available": 30,
+              "allocated": 0,
+              "consumed": 0,
+              "area": "Central",
+              "status": "Available",
+              "id": "WATER-002",
+              "version": 1
+            }
+          ],
+          "available_vehicles": 0,
+          "available_teams": 1,
+          "assigned_teams": 1,
+          "pending_resource_requests": 1,
+          "shelters": [
+            {
+              "id": "SH-001",
+              "name": "Central High School",
+              "location": [
+                41.88,
+                -87.63
+              ],
+              "capacity": 100,
+              "occupancy": 85,
+              "status": "Open",
+              "medical_support": true,
+              "accessibility": "Wheelchair accessible",
+              "public_contact": "312-555-0100",
+              "version": 1
+            },
+            {
+              "id": "SH-002",
+              "name": "North Community Center",
+              "location": [
+                41.95,
+                -87.65
+              ],
+              "capacity": 80,
+              "occupancy": 30,
+              "status": "Open",
+              "medical_support": true,
+              "accessibility": "Wheelchair accessible",
+              "public_contact": "312-555-0100",
+              "version": 1
+            },
+            {
+              "id": "SH-003",
+              "name": "Closed Sports Hall",
+              "location": [
+                41.89,
+                -87.62
+              ],
+              "capacity": 120,
+              "occupancy": 0,
+              "status": "Closed",
+              "medical_support": true,
+              "accessibility": "Wheelchair accessible",
+              "public_contact": "312-555-0100",
+              "version": 1
+            }
+          ],
+          "shelters_near_or_full": 0,
+          "active_evacuation_zones": 1
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc19_scope",
+      "use_case": "UC-19",
+      "description": "Limit resource and assigned shelter monitoring",
+      "input": "Resource Coordinator and Shelter Manager dashboards",
+      "expected_output": "Resource view excludes incidents; shelter view excludes SH-002",
+      "white_box_branch": "S1B/S1C Role-Limited; S3 Outside Role",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "as_of": "2026-11-12T04:01:14.746685+00:00",
+          "scope": [
+            "resources",
+            "allocations",
+            "requests"
+          ],
+          "unavailable_sources": [],
+          "resources": [
+            {
+              "name": "Portable generator",
+              "kind": "Equipment",
+              "category": "Generators",
+              "total": 4,
+              "available": 4,
+              "allocated": 0,
+              "consumed": 0,
+              "area": "Central",
+              "status": "Available",
+              "id": "GEN-001",
+              "version": 1
+            },
+            {
+              "name": "First-aid trauma kits",
+              "kind": "Consumable",
+              "category": "Medical supplies",
+              "total": 50,
+              "available": 50,
+              "allocated": 0,
+              "consumed": 0,
+              "area": "Central",
+              "status": "Available",
+              "id": "MED-001",
+              "version": 1
+            },
+            {
+              "name": "Rescue boat",
+              "kind": "Vehicle",
+              "total": 1,
+              "available": 0,
+              "allocated": 1,
+              "consumed": 0,
+              "area": "Central",
+              "category": "Rescue boats",
+              "status": "Available",
+              "id": "VEH-001",
+              "version": 1
+            },
+            {
+              "name": "Water cases",
+              "kind": "Consumable",
+              "total": 100,
+              "available": 90,
+              "allocated": 10,
+              "consumed": 0,
+              "area": "Central",
+              "category": "Water",
+              "status": "Available",
+              "id": "WATER-001",
+              "version": 1
+            },
+            {
+              "name": "Water cases (north depot)",
+              "kind": "Consumable",
+              "category": "Water",
+              "total": 30,
+              "available": 30,
+              "allocated": 0,
+              "consumed": 0,
+              "area": "Central",
+              "status": "Available",
+              "id": "WATER-002",
+              "version": 1
+            }
+          ],
+          "available_vehicles": 0,
+          "pending_resource_requests": 1
+        },
+        {
+          "as_of": "2026-11-12T04:01:14.746685+00:00",
+          "scope": [
+            "shelters"
+          ],
+          "unavailable_sources": [],
+          "shelters": [
+            {
+              "id": "SH-001",
+              "name": "Central High School",
+              "location": [
+                41.88,
+                -87.63
+              ],
+              "capacity": 100,
+              "occupancy": 85,
+              "status": "Open",
+              "medical_support": true,
+              "accessibility": "Wheelchair accessible",
+              "public_contact": "312-555-0100",
+              "version": 1
+            },
+            {
+              "id": "SH-003",
+              "name": "Closed Sports Hall",
+              "location": [
+                41.89,
+                -87.62
+              ],
+              "capacity": 120,
+              "occupancy": 0,
+              "status": "Closed",
+              "medical_support": true,
+              "accessibility": "Wheelchair accessible",
+              "public_contact": "312-555-0100",
+              "version": 1
+            }
+          ],
+          "shelters_near_or_full": 0
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "Your role cannot perform incidents."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc19_unavailable",
+      "use_case": "UC-19",
+      "description": "Keep unaffected dashboard sections during source outage",
+      "input": "Incident source unavailable",
+      "expected_output": "Incident marker Unavailable; shelters/resources still returned",
+      "white_box_branch": "S1.16A Source Unavailable",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "fault": "source_unavailable:incidents",
+          "enabled": true,
+          "recovered": 0
+        },
+        {
+          "as_of": "2026-11-12T04:01:14.746685+00:00",
+          "scope": [
+            "incidents",
+            "responders",
+            "assignments",
+            "resources",
+            "allocations",
+            "requests",
+            "shelters",
+            "zones",
+            "orders"
+          ],
+          "unavailable_sources": [
+            "incidents"
+          ],
+          "resources": [
+            {
+              "name": "Portable generator",
+              "kind": "Equipment",
+              "category": "Generators",
+              "total": 4,
+              "available": 4,
+              "allocated": 0,
+              "consumed": 0,
+              "area": "Central",
+              "status": "Available",
+              "id": "GEN-001",
+              "version": 1
+            },
+            {
+              "name": "First-aid trauma kits",
+              "kind": "Consumable",
+              "category": "Medical supplies",
+              "total": 50,
+              "available": 50,
+              "allocated": 0,
+              "consumed": 0,
+              "area": "Central",
+              "status": "Available",
+              "id": "MED-001",
+              "version": 1
+            },
+            {
+              "name": "Rescue boat",
+              "kind": "Vehicle",
+              "total": 1,
+              "available": 0,
+              "allocated": 1,
+              "consumed": 0,
+              "area": "Central",
+              "category": "Rescue boats",
+              "status": "Available",
+              "id": "VEH-001",
+              "version": 1
+            },
+            {
+              "name": "Water cases",
+              "kind": "Consumable",
+              "total": 100,
+              "available": 90,
+              "allocated": 10,
+              "consumed": 0,
+              "area": "Central",
+              "category": "Water",
+              "status": "Available",
+              "id": "WATER-001",
+              "version": 1
+            },
+            {
+              "name": "Water cases (north depot)",
+              "kind": "Consumable",
+              "category": "Water",
+              "total": 30,
+              "available": 30,
+              "allocated": 0,
+              "consumed": 0,
+              "area": "Central",
+              "status": "Available",
+              "id": "WATER-002",
+              "version": 1
+            }
+          ],
+          "available_vehicles": 0,
+          "available_teams": 1,
+          "assigned_teams": 1,
+          "pending_resource_requests": 1,
+          "shelters": [
+            {
+              "id": "SH-001",
+              "name": "Central High School",
+              "location": [
+                41.88,
+                -87.63
+              ],
+              "capacity": 100,
+              "occupancy": 85,
+              "status": "Open",
+              "medical_support": true,
+              "accessibility": "Wheelchair accessible",
+              "public_contact": "312-555-0100",
+              "version": 1
+            },
+            {
+              "id": "SH-002",
+              "name": "North Community Center",
+              "location": [
+                41.95,
+                -87.65
+              ],
+              "capacity": 80,
+              "occupancy": 30,
+              "status": "Open",
+              "medical_support": true,
+              "accessibility": "Wheelchair accessible",
+              "public_contact": "312-555-0100",
+              "version": 1
+            },
+            {
+              "id": "SH-003",
+              "name": "Closed Sports Hall",
+              "location": [
+                41.89,
+                -87.62
+              ],
+              "capacity": 120,
+              "occupancy": 0,
+              "status": "Closed",
+              "medical_support": true,
+              "accessibility": "Wheelchair accessible",
+              "public_contact": "312-555-0100",
+              "version": 1
+            }
+          ],
+          "shelters_near_or_full": 0,
+          "active_evacuation_zones": 1,
+          "incidents": "Unavailable"
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc20_immutable",
+      "use_case": "UC-20",
+      "description": "Save draft notes and protect finalized snapshots",
+      "input": "Update notes, finalize, mutate live shelter, attempt report edit/SQL delete",
+      "expected_output": "Finalized snapshot unchanged; service/SQL forbid changes",
+      "white_box_branch": "T3A Draft; Report Service and trigger immutability",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "kind": "Operational",
+          "status": "Draft",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": [
+              {
+                "id": "SH-001",
+                "name": "Central High School",
+                "location": [
+                  41.88,
+                  -87.63
+                ],
+                "capacity": 100,
+                "occupancy": 85,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-002",
+                "name": "North Community Center",
+                "location": [
+                  41.95,
+                  -87.65
+                ],
+                "capacity": 80,
+                "occupancy": 30,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-003",
+                "name": "Closed Sports Hall",
+                "location": [
+                  41.89,
+                  -87.62
+                ],
+                "capacity": 120,
+                "occupancy": 0,
+                "status": "Closed",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              }
+            ],
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [],
+          "notes": "Improve route planning and maintain extra drinking water.",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "id": "RP-6E7A20",
+          "version": 1
+        },
+        {
+          "kind": "Operational",
+          "status": "Draft",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": [
+              {
+                "id": "SH-001",
+                "name": "Central High School",
+                "location": [
+                  41.88,
+                  -87.63
+                ],
+                "capacity": 100,
+                "occupancy": 85,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-002",
+                "name": "North Community Center",
+                "location": [
+                  41.95,
+                  -87.65
+                ],
+                "capacity": 80,
+                "occupancy": 30,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-003",
+                "name": "Closed Sports Hall",
+                "location": [
+                  41.89,
+                  -87.62
+                ],
+                "capacity": 120,
+                "occupancy": 0,
+                "status": "Closed",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              }
+            ],
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [],
+          "notes": "Updated operational notes.",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "id": "RP-6E7A20",
+          "version": 2
+        },
+        {
+          "kind": "Operational",
+          "status": "Finalized",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": [
+              {
+                "id": "SH-001",
+                "name": "Central High School",
+                "location": [
+                  41.88,
+                  -87.63
+                ],
+                "capacity": 100,
+                "occupancy": 85,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-002",
+                "name": "North Community Center",
+                "location": [
+                  41.95,
+                  -87.65
+                ],
+                "capacity": 80,
+                "occupancy": 30,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-003",
+                "name": "Closed Sports Hall",
+                "location": [
+                  41.89,
+                  -87.62
+                ],
+                "capacity": 120,
+                "occupancy": 0,
+                "status": "Closed",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              }
+            ],
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [],
+          "notes": "Updated operational notes.",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "finalized_at": "2026-11-12T04:01:14.746685+00:00",
+          "finalized_by": "admin",
+          "id": "RP-6E7A20",
+          "version": 3
+        },
+        {
+          "name": "Central High School",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "area": "Central",
+          "occupancy": 90,
+          "capacity": 100,
+          "manager": "shelter",
+          "status": "Near Capacity",
+          "medical_support": true,
+          "accessibility": "Wheelchair accessible",
+          "public_contact": "312-555-0100",
+          "internal_contact": "Internal desk extension 204",
+          "supplies": {
+            "food": 200,
+            "water": 400
+          },
+          "id": "SH-001",
+          "version": 2
+        },
+        {
+          "kind": "Operational",
+          "status": "Finalized",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": [
+              {
+                "id": "SH-001",
+                "name": "Central High School",
+                "location": [
+                  41.88,
+                  -87.63
+                ],
+                "capacity": 100,
+                "occupancy": 85,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-002",
+                "name": "North Community Center",
+                "location": [
+                  41.95,
+                  -87.65
+                ],
+                "capacity": 80,
+                "occupancy": 30,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-003",
+                "name": "Closed Sports Hall",
+                "location": [
+                  41.89,
+                  -87.62
+                ],
+                "capacity": 120,
+                "occupancy": 0,
+                "status": "Closed",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              }
+            ],
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [],
+          "notes": "Updated operational notes.",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "finalized_at": "2026-11-12T04:01:14.746685+00:00",
+          "finalized_by": "admin",
+          "id": "RP-6E7A20",
+          "version": 3
+        },
+        {
+          "error": "IMMUTABLE",
+          "message": "Finalized reports cannot be edited."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc20_invalid_missing",
+      "use_case": "UC-20",
+      "description": "Validate criteria and block incomplete finalization",
+      "input": "Reversed period; missing resources source",
+      "expected_output": "Invalid period rejected; missing data shown; report stays Draft",
+      "white_box_branch": "T2.4A Invalid; T2.6B Data Unavailable",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "End time must be after start time."
+        },
+        {
+          "fault": "source_unavailable:resources",
+          "enabled": true,
+          "recovered": 0
+        },
+        {
+          "kind": "Operational",
+          "status": "Draft",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": null,
+            "shelter_usage_current": [
+              {
+                "id": "SH-001",
+                "name": "Central High School",
+                "location": [
+                  41.88,
+                  -87.63
+                ],
+                "capacity": 100,
+                "occupancy": 85,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-002",
+                "name": "North Community Center",
+                "location": [
+                  41.95,
+                  -87.65
+                ],
+                "capacity": 80,
+                "occupancy": 30,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-003",
+                "name": "Closed Sports Hall",
+                "location": [
+                  41.89,
+                  -87.62
+                ],
+                "capacity": 120,
+                "occupancy": 0,
+                "status": "Closed",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              }
+            ],
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [
+            "resources"
+          ],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [
+            {
+              "actor": "sysadmin",
+              "action": "DEMO_FAULT_CHANGED",
+              "target": "source_unavailable:resources",
+              "created_at": "2026-11-12T04:01:14.746685+00:00",
+              "details": "{\"enabled\": true, \"actor_roles\": [\"System Administrator\"]}"
+            }
+          ],
+          "notes": "Improve route planning and maintain extra drinking water.",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "id": "RP-361A10",
+          "version": 1
+        },
+        {
+          "error": "INCOMPLETE",
+          "message": "Missing data blocks finalization. Recover sources and build a complete draft."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc20_metrics_finalize",
+      "use_case": "UC-20",
+      "description": "Calculate, save and finalize the same operational report",
+      "input": "Baseline period, then finalize draft ID/version",
+      "expected_output": "3 incidents, 15 minute average response, 50% personnel utilization; Finalized same ID",
+      "white_box_branch": "T2 metrics and working draft; T3 immutable version",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "kind": "Operational",
+          "status": "Draft",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": [
+              {
+                "id": "SH-001",
+                "name": "Central High School",
+                "location": [
+                  41.88,
+                  -87.63
+                ],
+                "capacity": 100,
+                "occupancy": 85,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-002",
+                "name": "North Community Center",
+                "location": [
+                  41.95,
+                  -87.65
+                ],
+                "capacity": 80,
+                "occupancy": 30,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-003",
+                "name": "Closed Sports Hall",
+                "location": [
+                  41.89,
+                  -87.62
+                ],
+                "capacity": 120,
+                "occupancy": 0,
+                "status": "Closed",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              }
+            ],
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [],
+          "notes": "Improve route planning and maintain extra drinking water.",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "id": "RP-83FCAE",
+          "version": 1
+        },
+        {
+          "kind": "Operational",
+          "status": "Finalized",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": [
+              {
+                "id": "SH-001",
+                "name": "Central High School",
+                "location": [
+                  41.88,
+                  -87.63
+                ],
+                "capacity": 100,
+                "occupancy": 85,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-002",
+                "name": "North Community Center",
+                "location": [
+                  41.95,
+                  -87.65
+                ],
+                "capacity": 80,
+                "occupancy": 30,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-003",
+                "name": "Closed Sports Hall",
+                "location": [
+                  41.89,
+                  -87.62
+                ],
+                "capacity": 120,
+                "occupancy": 0,
+                "status": "Closed",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              }
+            ],
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [],
+          "notes": "Improve route planning and maintain extra drinking water.",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "finalized_at": "2026-11-12T04:01:14.746685+00:00",
+          "finalized_by": "admin",
+          "id": "RP-83FCAE",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc21_limitations",
+      "use_case": "UC-21",
+      "description": "Require explicit limitations for incomplete analysis",
+      "input": "Shelter source unavailable; finalize before/after documenting limitation",
+      "expected_output": "First finalization blocked; documented version Finalized with missing sections retained",
+      "white_box_branch": "U3.4A Incomplete alternative",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "fault": "source_unavailable:shelters",
+          "enabled": true,
+          "recovered": 0
+        },
+        {
+          "kind": "After-Action",
+          "status": "Draft",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": null,
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [
+            "shelters"
+          ],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [
+            {
+              "actor": "sysadmin",
+              "action": "DEMO_FAULT_CHANGED",
+              "target": "source_unavailable:shelters",
+              "created_at": "2026-11-12T04:01:14.746685+00:00",
+              "details": "{\"enabled\": true, \"actor_roles\": [\"System Administrator\"]}"
+            }
+          ],
+          "notes": "Improve route planning and maintain extra drinking water.",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "id": "RP-389587",
+          "version": 1
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Documented limitations must contain 10 to 2000 characters."
+        },
+        {
+          "kind": "After-Action",
+          "status": "Draft",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": null,
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [
+            "shelters"
+          ],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [
+            {
+              "actor": "sysadmin",
+              "action": "DEMO_FAULT_CHANGED",
+              "target": "source_unavailable:shelters",
+              "created_at": "2026-11-12T04:01:14.746685+00:00",
+              "details": "{\"enabled\": true, \"actor_roles\": [\"System Administrator\"]}"
+            }
+          ],
+          "notes": "Improve route planning and water inventory.",
+          "limitations": "Shelter occupancy could not be checked because its source was unavailable.",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "id": "RP-389587",
+          "version": 2
+        },
+        {
+          "kind": "After-Action",
+          "status": "Finalized",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": null,
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [
+            "shelters"
+          ],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [
+            {
+              "actor": "sysadmin",
+              "action": "DEMO_FAULT_CHANGED",
+              "target": "source_unavailable:shelters",
+              "created_at": "2026-11-12T04:01:14.746685+00:00",
+              "details": "{\"enabled\": true, \"actor_roles\": [\"System Administrator\"]}"
+            }
+          ],
+          "notes": "Improve route planning and water inventory.",
+          "limitations": "Shelter occupancy could not be checked because its source was unavailable.",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "finalized_at": "2026-11-12T04:01:14.746685+00:00",
+          "finalized_by": "admin",
+          "id": "RP-389587",
+          "version": 3
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc21_main",
+      "use_case": "UC-21",
+      "description": "Aggregate and finalize an after-action report",
+      "input": "Complete analysis and baseline incidents",
+      "expected_output": "Central area contains 3 IDs; same report Finalized",
+      "white_box_branch": "U1-U3 aggregation; U4 finalization",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "kind": "After-Action",
+          "status": "Draft",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": [
+              {
+                "id": "SH-001",
+                "name": "Central High School",
+                "location": [
+                  41.88,
+                  -87.63
+                ],
+                "capacity": 100,
+                "occupancy": 85,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-002",
+                "name": "North Community Center",
+                "location": [
+                  41.95,
+                  -87.65
+                ],
+                "capacity": 80,
+                "occupancy": 30,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-003",
+                "name": "Closed Sports Hall",
+                "location": [
+                  41.89,
+                  -87.62
+                ],
+                "capacity": 120,
+                "occupancy": 0,
+                "status": "Closed",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              }
+            ],
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [],
+          "notes": "Improve route planning and maintain extra drinking water.",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "id": "RP-3913D4",
+          "version": 1
+        },
+        {
+          "kind": "After-Action",
+          "status": "Finalized",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": [
+              {
+                "id": "SH-001",
+                "name": "Central High School",
+                "location": [
+                  41.88,
+                  -87.63
+                ],
+                "capacity": 100,
+                "occupancy": 85,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-002",
+                "name": "North Community Center",
+                "location": [
+                  41.95,
+                  -87.65
+                ],
+                "capacity": 80,
+                "occupancy": 30,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-003",
+                "name": "Closed Sports Hall",
+                "location": [
+                  41.89,
+                  -87.62
+                ],
+                "capacity": 120,
+                "occupancy": 0,
+                "status": "Closed",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              }
+            ],
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [],
+          "notes": "Improve route planning and maintain extra drinking water.",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "finalized_at": "2026-11-12T04:01:14.746685+00:00",
+          "finalized_by": "admin",
+          "id": "RP-3913D4",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc21_no_records_notes",
+      "use_case": "UC-21",
+      "description": "Reject empty periods and missing analysis",
+      "input": "2020 period; baseline after-action draft without notes",
+      "expected_output": "NO_RECORDS for empty period; notes required before finalization",
+      "white_box_branch": "U2.4A No Records; After Action Validation Logic",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "NO_RECORDS",
+          "message": "No incident records match this period and area."
+        },
+        {
+          "kind": "After-Action",
+          "status": "Draft",
+          "start": "2026-11-11T04:01:14.746685+00:00",
+          "end": "2026-11-13T04:01:14.746685+00:00",
+          "area": "All",
+          "metrics": {
+            "total_incidents": 3,
+            "verified_incidents": 2,
+            "incidents_by_type": {
+              "Flood": 3
+            },
+            "incidents_by_severity": {
+              "4": 1,
+              "2": 1,
+              "5": 1
+            },
+            "resolved_incidents": 1,
+            "unresolved_incidents": 2,
+            "average_response_minutes": 15.0,
+            "response_time_samples": 2,
+            "personnel_utilization_percent": 50.0,
+            "responder_activity": {
+              "responder": 1,
+              "team-2": 1
+            },
+            "allocated_resource_quantity": 11,
+            "resources_current": [
+              {
+                "name": "Portable generator",
+                "kind": "Equipment",
+                "category": "Generators",
+                "total": 4,
+                "available": 4,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "GEN-001",
+                "version": 1
+              },
+              {
+                "name": "First-aid trauma kits",
+                "kind": "Consumable",
+                "category": "Medical supplies",
+                "total": 50,
+                "available": 50,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "MED-001",
+                "version": 1
+              },
+              {
+                "name": "Rescue boat",
+                "kind": "Vehicle",
+                "total": 1,
+                "available": 0,
+                "allocated": 1,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Rescue boats",
+                "status": "Available",
+                "id": "VEH-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases",
+                "kind": "Consumable",
+                "total": 100,
+                "available": 90,
+                "allocated": 10,
+                "consumed": 0,
+                "area": "Central",
+                "category": "Water",
+                "status": "Available",
+                "id": "WATER-001",
+                "version": 1
+              },
+              {
+                "name": "Water cases (north depot)",
+                "kind": "Consumable",
+                "category": "Water",
+                "total": 30,
+                "available": 30,
+                "allocated": 0,
+                "consumed": 0,
+                "area": "Central",
+                "status": "Available",
+                "id": "WATER-002",
+                "version": 1
+              }
+            ],
+            "shelter_usage_current": [
+              {
+                "id": "SH-001",
+                "name": "Central High School",
+                "location": [
+                  41.88,
+                  -87.63
+                ],
+                "capacity": 100,
+                "occupancy": 85,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-002",
+                "name": "North Community Center",
+                "location": [
+                  41.95,
+                  -87.65
+                ],
+                "capacity": 80,
+                "occupancy": 30,
+                "status": "Open",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              },
+              {
+                "id": "SH-003",
+                "name": "Closed Sports Hall",
+                "location": [
+                  41.89,
+                  -87.62
+                ],
+                "capacity": 120,
+                "occupancy": 0,
+                "status": "Closed",
+                "medical_support": true,
+                "accessibility": "Wheelchair accessible",
+                "public_contact": "312-555-0100",
+                "version": 1
+              }
+            ],
+            "pending_resource_requests": 1,
+            "resource_shortages": [
+              {
+                "incident_id": "IN-001",
+                "resource_type": "Water",
+                "quantity": 20,
+                "status": "Pending",
+                "created_at": "2026-11-12T01:01:14.746685+00:00",
+                "id": "RQ-001",
+                "version": 1
+              }
+            ],
+            "evacuation_orders": 0
+          },
+          "missing_sections": [],
+          "incidents_by_area": {
+            "Central": [
+              "IN-001",
+              "IN-002",
+              "IN-003"
+            ]
+          },
+          "major_decisions": [],
+          "notes": "",
+          "limitations": "",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "created_by": "admin",
+          "snapshot_note": "Incidents use creation times in [start,end). Inventory and shelter values are current snapshots.",
+          "id": "RP-A9BF2C",
+          "version": 1
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "After-action notes and lessons learned must contain 10 to 10000 characters."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc22_create_preview",
+      "use_case": "UC-22",
+      "description": "Preview least-privilege account permissions then create",
+      "input": "New Shelter Manager, preview then confirmed write",
+      "expected_output": "Preview is read-only; account/holder notice saved; credentials omitted",
+      "white_box_branch": "V3 validation/implied permissions; V4 save",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "username": "testuser",
+          "name": "Test User",
+          "agency": "County Agency",
+          "roles": [
+            "Shelter Manager"
+          ],
+          "status": "Active",
+          "permissions": [
+            "dashboard",
+            "occupancy",
+            "shelter_private",
+            "shelter_update"
+          ]
+        },
+        {
+          "username": "testuser",
+          "name": "Test User",
+          "agency": "County Agency",
+          "status": "Active",
+          "version": 1,
+          "roles": [
+            "Shelter Manager"
+          ],
+          "permissions": [
+            "dashboard",
+            "occupancy",
+            "shelter_private",
+            "shelter_update"
+          ]
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc22_inactive_last_admin",
+      "use_case": "UC-22",
+      "description": "Recheck account state and protect last administrator",
+      "input": "Deactivate a logged-in new user; disable sole sysadmin",
+      "expected_output": "Existing session rejected; last sysadmin retained",
+      "white_box_branch": "fresh user lookup and last-administrator guard",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "username": "testuser",
+          "name": "Test User",
+          "agency": "County Agency",
+          "status": "Active",
+          "version": 1,
+          "roles": [
+            "Shelter Manager"
+          ],
+          "permissions": [
+            "dashboard",
+            "occupancy",
+            "shelter_private",
+            "shelter_update"
+          ]
+        },
+        {
+          "username": "testuser",
+          "name": "Test User",
+          "agency": "County Agency",
+          "status": "Inactive",
+          "version": 2,
+          "roles": [
+            "Shelter Manager"
+          ],
+          "permissions": [
+            "dashboard",
+            "occupancy",
+            "shelter_private",
+            "shelter_update"
+          ]
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Keep at least one active System Administrator."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc22_invalid",
+      "use_case": "UC-22",
+      "description": "Reject invalid identities, duplicate accounts and weak passwords",
+      "input": "SQL-like username, duplicate, short/no-digit password, missing agency",
+      "expected_output": "Every invalid change rejected; original accounts retained",
+      "white_box_branch": "V3.4A Invalid",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Username may contain letters, digits, _, ., @ and -."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Password needs 12-128 characters, a letter and a number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Password needs 12-128 characters, a letter and a number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Agency must contain 2 to 100 characters."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Select valid roles."
+        },
+        {
+          "username": "testuser",
+          "name": "Test User",
+          "agency": "County Agency",
+          "status": "Active",
+          "version": 1,
+          "roles": [
+            "Shelter Manager"
+          ],
+          "permissions": [
+            "dashboard",
+            "occupancy",
+            "shelter_private",
+            "shelter_update"
+          ]
+        },
+        {
+          "error": "CONFLICT",
+          "message": "Username already exists. Use user edit."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc22_sod_technical",
+      "use_case": "UC-22",
+      "description": "Enforce separation of duties and technical-only authority",
+      "input": "System+Emergency Admin; Responder+Dispatcher; sysadmin operational attempt",
+      "expected_output": "SOD_VIOLATION for combinations; sysadmin cannot issue zones",
+      "white_box_branch": "V3.10B SoD; V3.10C Technical Role Only",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "SOD_VIOLATION",
+          "message": "Separation of duties: this role combination is not allowed."
+        },
+        {
+          "error": "SOD_VIOLATION",
+          "message": "Separation of duties: this role combination is not allowed."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "Your role cannot perform zones."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc23_privacy",
+      "use_case": "UC-23",
+      "description": "Use generic credential errors and keep credentials private",
+      "input": "Unknown user vs wrong known password; list user accounts",
+      "expected_output": "Same error text; distinct salts/hashes; no password/hash in API account results",
+      "white_box_branch": "W2.10B No Match; salted hashing and safe output",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "AUTHENTICATION",
+          "message": "Invalid username or password, or account inactive."
+        },
+        {
+          "error": "AUTHENTICATION",
+          "message": "Invalid username or password, or account inactive."
+        },
+        [
+          {
+            "username": "admin",
+            "name": "Admin",
+            "agency": "Test Agency",
+            "status": "Active",
+            "version": 1,
+            "roles": [
+              "Emergency Administrator"
+            ],
+            "permissions": [
+              "close",
+              "dashboard",
+              "incidents",
+              "notices",
+              "orders",
+              "override",
+              "reports",
+              "restrictions",
+              "shelter_private",
+              "zones"
+            ]
+          },
+          {
+            "username": "dispatcher",
+            "name": "Dispatcher",
+            "agency": "Test Agency",
+            "status": "Active",
+            "version": 1,
+            "roles": [
+              "Dispatcher"
+            ],
+            "permissions": [
+              "assign",
+              "citizen_reports",
+              "close",
+              "dashboard",
+              "incident_add",
+              "incident_update",
+              "incidents",
+              "shelter_private"
+            ]
+          },
+          {
+            "username": "resource",
+            "name": "Resource",
+            "agency": "Test Agency",
+            "status": "Active",
+            "version": 1,
+            "roles": [
+              "Resource Coordinator"
+            ],
+            "permissions": [
+              "dashboard",
+              "inventory",
+              "requests",
+              "shelter_private"
+            ]
+          },
+          {
+            "username": "responder",
+            "name": "Responder",
+            "agency": "Test Agency",
+            "status": "Active",
+            "version": 1,
+            "roles": [
+              "First Responder"
+            ],
+            "permissions": [
+              "escalate",
+              "incident_update",
+              "incidents",
+              "progress",
+              "resolve",
+              "resource_request",
+              "shelter_private"
+            ]
+          },
+          {
+            "username": "shelter",
+            "name": "Shelter",
+            "agency": "Test Agency",
+            "status": "Active",
+            "version": 1,
+            "roles": [
+              "Shelter Manager"
+            ],
+            "permissions": [
+              "dashboard",
+              "occupancy",
+              "shelter_private",
+              "shelter_update"
+            ]
+          },
+          {
+            "username": "sysadmin",
+            "name": "Sysadmin",
+            "agency": "Test Agency",
+            "status": "Active",
+            "version": 1,
+            "roles": [
+              "System Administrator"
+            ],
+            "permissions": [
+              "audit",
+              "fault",
+              "users"
+            ]
+          }
+        ]
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc23_rate_limit",
+      "use_case": "UC-23",
+      "description": "Count failed attempts and enforce cooldown",
+      "input": "5 wrong admin passwords, correct sixth, wait 16 minutes",
+      "expected_output": "Sixth RATE_LIMITED; correct login works after cooldown",
+      "white_box_branch": "W2.10B failure count; W2.3A Rate Limited",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "AUTHENTICATION",
+          "message": "Invalid username or password, or account inactive."
+        },
+        {
+          "error": "AUTHENTICATION",
+          "message": "Invalid username or password, or account inactive."
+        },
+        {
+          "error": "AUTHENTICATION",
+          "message": "Invalid username or password, or account inactive."
+        },
+        {
+          "error": "AUTHENTICATION",
+          "message": "Invalid username or password, or account inactive."
+        },
+        {
+          "error": "AUTHENTICATION",
+          "message": "Invalid username or password, or account inactive."
+        },
+        {
+          "error": "RATE_LIMITED",
+          "message": "Too many attempts. Wait 15 minutes."
+        },
+        {
+          "recovered_user": "admin"
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc23_sessions",
+      "use_case": "UC-23",
+      "description": "Authenticate, expire and revoke database sessions",
+      "input": "Valid login; advance 31 minutes; fresh login then logout",
+      "expected_output": "Missing/expired/revoked tokens denied",
+      "white_box_branch": "W2 match; persistent session expiry and logout",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "expired_token_rejected": true,
+          "logged_out_token_rejected": true
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc24_immutable",
+      "use_case": "UC-24",
+      "description": "Append events with actor/role/target and prevent history edits",
+      "input": "Shelter occupancy write; raw UPDATE/DELETE of audit/history",
+      "expected_output": "Actor and role retained; all historical edits rejected by SQL triggers",
+      "white_box_branch": "X1 main immutable recording",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "name": "Central High School",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "area": "Central",
+          "occupancy": 86,
+          "capacity": 100,
+          "manager": "shelter",
+          "status": "Open",
+          "medical_support": true,
+          "accessibility": "Wheelchair accessible",
+          "public_contact": "312-555-0100",
+          "internal_contact": "Internal desk extension 204",
+          "supplies": {
+            "food": 200,
+            "water": 400
+          },
+          "id": "SH-001",
+          "version": 2
+        },
+        {
+          "event_id": "76161580470ab45ef5c2b36f0807c88c",
+          "actor": "shelter",
+          "action": "UC-12 OCCUPANCY_CHANGED",
+          "target": "SH-001",
+          "created_at": "2026-11-12T04:01:14.746685+00:00",
+          "details": "{\"id\": \"SH-001\", \"before\": 85, \"after\": 86, \"capacity\": 100, \"status\": \"Open\", \"version\": 1, \"warning\": \"\", \"reason\": \"\", \"actor_roles\": [\"Shelter Manager\"]}"
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc24_queue_recovery",
+      "use_case": "UC-24",
+      "description": "Persist queued events and recover original IDs once",
+      "input": "Audit outage; occupancy change; new Backend; recover",
+      "expected_output": "Business write retained; queue and alert exist; original IDs flushed exactly once",
+      "white_box_branch": "X1.3A Store Unavailable; X2 Store Recovered",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "fault": "audit_unavailable",
+          "enabled": true,
+          "recovered": 0
+        },
+        {
+          "name": "Central High School",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "area": "Central",
+          "occupancy": 86,
+          "capacity": 100,
+          "manager": "shelter",
+          "status": "Open",
+          "medical_support": true,
+          "accessibility": "Wheelchair accessible",
+          "public_contact": "312-555-0100",
+          "internal_contact": "Internal desk extension 204",
+          "supplies": {
+            "food": 200,
+            "water": 400
+          },
+          "id": "SH-001",
+          "version": 2
+        },
+        {
+          "fault": "audit_unavailable",
+          "enabled": false,
+          "recovered": 3
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_https_verification",
+      "use_case": "API security",
+      "description": "Keep HTTPS certificate and hostname verification enabled",
+      "input": "Create HTTPS client using platform trust store",
+      "expected_output": "CERT_REQUIRED and hostname verification stay enabled",
+      "white_box_branch": "TLS trust-store initialization",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "certificate_required": true,
+          "hostname_verification": true
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_no_remote_http",
+      "use_case": "API security",
+      "description": "Reject unencrypted remote backends",
+      "input": "http://example.com",
+      "expected_output": "Client rejects HTTP before any credentials are transmitted",
+      "white_box_branch": "HTTPS endpoint validation",
+      "status": "PASS",
+      "actual_output": [
+        "Use HTTPS for the cloud backend."
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc01_gibberish",
+      "use_case": "UC-1",
+      "description": "Reject gibberish and invalid values",
+      "input": "Type 'Alien invasion', severity 'abc'/9, location 91,0 and NaN, future time, phone 'call me', name 'R2-D2 <b>'",
+      "expected_output": "All rejected; nothing saved",
+      "white_box_branch": "A3.4B invalid information",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Incident type must be one of: Flood, Fire, Traffic accident, Medical emergency, Rescue, Hazard, Other."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Severity must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Severity must be between 1 and 5."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Latitude must be between -90 and 90."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Latitude must be between -90 and 90."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Date and time must be within the last 30 days and not in the future."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Date and time: use YYYY-MM-DDTHH:MM:SS+00:00."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Enter a valid phone number, for example +1 334-555-0100."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Name may contain letters, spaces, apostrophes and hyphens (2-100 characters)."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Description must contain 10 to 2000 characters."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc01_injection",
+      "use_case": "UC-1",
+      "description": "Store injection text as plain data",
+      "input": "Address \"'; DROP TABLE records; --\", description with <script>",
+      "expected_output": "Saved literally through parameterized SQL; records table intact",
+      "white_box_branch": "Parameterized D1 statements",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "id": "RPT-672AKWN2",
+          "status": "Submitted",
+          "submitted_at": "2026-11-12T04:01:16.161403+00:00"
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc01_missing",
+      "use_case": "UC-1",
+      "description": "Reject missing required fields",
+      "input": "Empty type, location, description, severity and time",
+      "expected_output": "Each attempt rejected with a field message; nothing saved",
+      "white_box_branch": "A3.4A missing information",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Incident type must be one of: Flood, Fire, Traffic accident, Medical emergency, Rescue, Hazard, Other."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Location must contain 3 to 200 characters."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Description must contain 10 to 2000 characters."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Severity must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Date and time: use YYYY-MM-DDTHH:MM:SS+00:00."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc01_rate_limit",
+      "use_case": "UC-1",
+      "description": "Limit report flooding from one connection",
+      "input": "6 reports from client 203.0.113.9 within 10 minutes, then one from another client",
+      "expected_output": "Sixth rejected (RATE_LIMITED); other client accepted",
+      "white_box_branch": "Public write rate limit",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "reports_saved": 8
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc01_submit",
+      "use_case": "UC-1",
+      "description": "Submit a complete citizen report without an account",
+      "input": "Fire, 120 Main St, 41.881,-87.629, severity 4, valid time, name and phone",
+      "expected_output": "Report saved as Submitted with an RPT ID; dispatchers alerted; audit written",
+      "white_box_branch": "A2 valid input; A4 save, notify, audit",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "id": "RPT-6H2H4VMC",
+          "status": "Submitted",
+          "submitted_at": "2026-11-12T04:01:16.161403+00:00"
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc02_after_review",
+      "use_case": "UC-2",
+      "description": "Status follows dispatcher review",
+      "input": "Associate RPT-DEMA2345, then check status",
+      "expected_output": "Linked to an incident that is already being handled",
+      "white_box_branch": "B3 status after UC-3",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Responding",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T01:16:16.161403+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "reports": [
+            "RPT-DEMA2345"
+          ],
+          "id": "IN-001",
+          "version": 2
+        },
+        {
+          "id": "RPT-DEMA2345",
+          "type": "Flood",
+          "submitted_at": "2026-11-10T14:51:56.992319+00:00",
+          "status": "Linked to an incident that is already being handled"
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc02_not_found",
+      "use_case": "UC-2",
+      "description": "Reject wrong, unknown and injection IDs",
+      "input": "hello123, RPT-ZZZZZZZZ, ' OR 1=1 --",
+      "expected_output": "Same NOT_FOUND message for all; no data revealed",
+      "white_box_branch": "B2.4A not found",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "NOT_FOUND",
+          "message": "No report was found with that ID. Check the ID and try again."
+        },
+        {
+          "error": "NOT_FOUND",
+          "message": "No report was found with that ID. Check the ID and try again."
+        },
+        {
+          "error": "NOT_FOUND",
+          "message": "No report was found with that ID. Check the ID and try again."
+        },
+        {
+          "error": "NOT_FOUND",
+          "message": "No report was found with that ID. Check the ID and try again."
+        },
+        {
+          "error": "NOT_FOUND",
+          "message": "No report was found with that ID. Check the ID and try again."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc02_valid",
+      "use_case": "UC-2",
+      "description": "Check status with a valid ID",
+      "input": "rpt-dema2345 (lower case)",
+      "expected_output": "Public status text, type and time only; no contact details",
+      "white_box_branch": "B2 valid ID; public projection",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "id": "RPT-DEMA2345",
+          "type": "Flood",
+          "submitted_at": "2026-11-10T14:51:56.992319+00:00",
+          "status": "Received - waiting for dispatcher review"
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc03_associate",
+      "use_case": "UC-3",
+      "description": "Associate a report with an active incident",
+      "input": "RPT-DEMA2345 -> IN-001",
+      "expected_output": "Report Associated; IN-001 lists the report; history entry",
+      "white_box_branch": "C3A associate",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Responding",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T01:16:16.161403+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "reports": [
+            "RPT-DEMA2345"
+          ],
+          "id": "IN-001",
+          "version": 2
+        },
+        {
+          "error": "CONFLICT",
+          "message": "IN-002 is Resolved. No change was saved."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc03_classify",
+      "use_case": "UC-3",
+      "description": "Classify a report that is not an incident",
+      "input": "Non-emergency without reason, then with reason",
+      "expected_output": "Missing reason rejected; report kept with status Non-emergency",
+      "white_box_branch": "C3B classify",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Reason must contain 10 to 500 characters."
+        },
+        {
+          "type": "Hazard",
+          "address": "Lake St and Wells St",
+          "location": [
+            41.8857,
+            -87.6339
+          ],
+          "description": "A tree fell on power lines and the lines are lying on the street.",
+          "severity": 3,
+          "occurred_at": "2026-11-10T14:45:00+00:00",
+          "contact_name": "",
+          "contact_phone": "",
+          "status": "Non-emergency",
+          "submitted_at": "2026-11-10T14:51:56.992319+00:00",
+          "incident_id": null,
+          "reviewed_by": "dispatcher",
+          "reviewed_at": "2026-11-12T04:01:16.161403+00:00",
+          "classification_reason": "Utility company already on site.",
+          "id": "RPT-DEMB6789",
+          "version": 2
+        },
+        {
+          "error": "CONFLICT",
+          "message": "RPT-DEMB6789 was already reviewed (Non-emergency)."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc03_create",
+      "use_case": "UC-3",
+      "description": "Verify a report and create an incident",
+      "input": "RPT-DEMB6789: preview then create Hazard severity 3 priority High",
+      "expected_output": "Preview writes nothing; new Reported incident keeps the source report; report Verified",
+      "white_box_branch": "C3 create incident; C4 save",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "report": "RPT-DEMB6789",
+          "action": "Create incident",
+          "incident": {
+            "id": "IN-9F0547",
+            "type": "Hazard",
+            "description": "Tree on power lines, lines on the street.",
+            "location": [
+              41.8857,
+              -87.6339
+            ],
+            "area": "Central",
+            "severity": 3,
+            "priority": "High",
+            "needed_qualification": "",
+            "responders_needed": 1,
+            "status": "Reported",
+            "created_at": "2026-11-12T04:01:16.161403+00:00",
+            "responded_at": null,
+            "resolution": {},
+            "originating_report": "RPT-DEMB6789",
+            "reports": [
+              "RPT-DEMB6789"
+            ]
+          }
+        },
+        {
+          "type": "Hazard",
+          "description": "Tree on power lines, lines on the street.",
+          "location": [
+            41.8857,
+            -87.6339
+          ],
+          "area": "Central",
+          "severity": 3,
+          "priority": "High",
+          "needed_qualification": "",
+          "responders_needed": 1,
+          "status": "Reported",
+          "created_at": "2026-11-12T04:01:16.161403+00:00",
+          "responded_at": null,
+          "resolution": {},
+          "originating_report": "RPT-DEMB6789",
+          "reports": [
+            "RPT-DEMB6789"
+          ],
+          "id": "IN-F04E7B",
+          "version": 1
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc03_invalid_access",
+      "use_case": "UC-3",
+      "description": "Reject invalid incident values, stale versions and other roles",
+      "input": "Blank/gibberish fields; version 7; responder and guest",
+      "expected_output": "Invalid rejected; stale CONFLICT; responder FORBIDDEN; guest AUTHENTICATION",
+      "white_box_branch": "C3.4A invalid; access control",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Incident type must be one of: Flood, Fire, Traffic accident, Medical emergency, Rescue, Hazard, Other."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Description must contain 10 to 2000 characters."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Severity must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Location must be latitude,longitude."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Priority must be one of: Low, Medium, High, Urgent."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Needed qualification must be one of: Firefighting, EMT, Paramedic, Search and Rescue, Water Rescue, HazMat, Structural Engineering, Police."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Responders needed must be between 1 and 50."
+        },
+        {
+          "error": "CONFLICT",
+          "message": "Record changed or ID already exists. Reload and try again."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "Your role cannot perform citizen_reports."
+        },
+        {
+          "error": "AUTHENTICATION",
+          "message": "Log in first: login <username>"
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc03_list_matches",
+      "use_case": "UC-3",
+      "description": "List submitted reports and rank matching incidents",
+      "input": "Dispatcher; matches for RPT-DEMA2345",
+      "expected_output": "Both demo reports listed; IN-001 suggested first",
+      "white_box_branch": "C1 queue; C2 matching algorithm",
+      "status": "PASS",
+      "actual_output": [
+        [
+          {
+            "type": "Flood",
+            "address": "River Road near the bridge",
+            "location": [
+              41.8805,
+              -87.6305
+            ],
+            "description": "Water is rising fast and a car is stuck on River Road.",
+            "severity": 4,
+            "occurred_at": "2026-11-10T14:40:00+00:00",
+            "contact_name": "Ana Ruiz",
+            "contact_phone": "312-555-0142",
+            "status": "Submitted",
+            "submitted_at": "2026-11-10T14:51:56.992319+00:00",
+            "incident_id": null,
+            "id": "RPT-DEMA2345",
+            "version": 1
+          },
+          {
+            "type": "Hazard",
+            "address": "Lake St and Wells St",
+            "location": [
+              41.8857,
+              -87.6339
+            ],
+            "description": "A tree fell on power lines and the lines are lying on the street.",
+            "severity": 3,
+            "occurred_at": "2026-11-10T14:45:00+00:00",
+            "contact_name": "",
+            "contact_phone": "",
+            "status": "Submitted",
+            "submitted_at": "2026-11-10T14:51:56.992319+00:00",
+            "incident_id": null,
+            "id": "RPT-DEMB6789",
+            "version": 1
+          }
+        ],
+        [
+          {
+            "id": "IN-001",
+            "type": "Flood",
+            "status": "Responding",
+            "severity": 4,
+            "description": "Flooded residential building.",
+            "distance_km": 0.07,
+            "score": 90,
+            "version": 1
+          },
+          {
+            "id": "IN-003",
+            "type": "Flood",
+            "status": "Reported",
+            "severity": 5,
+            "description": "Flooded residential building.",
+            "distance_km": 0.07,
+            "score": 90,
+            "version": 1
+          }
+        ]
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc04_dispatcher",
+      "use_case": "UC-4",
+      "description": "Dispatcher raises severity with review and version check",
+      "input": "IN-001 severity 4 -> 5: preview, save v1, save stale v1 again",
+      "expected_output": "Preview lists the change; saved v2 with history and dispatcher alert; stale write CONFLICT",
+      "white_box_branch": "D3 review; D4 save; D4.5A conflict",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "id": "IN-001",
+          "version": 1,
+          "changes": {
+            "severity": {
+              "from": 4,
+              "to": 5
+            }
+          }
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 5,
+          "status": "Responding",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T01:16:16.161403+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "priority": "Medium",
+          "needed_qualification": "",
+          "responders_needed": 1,
+          "id": "IN-001",
+          "version": 2
+        },
+        {
+          "error": "CONFLICT",
+          "message": "Record changed or ID already exists. Reload and try again."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc04_invalid",
+      "use_case": "UC-4",
+      "description": "Reject gibberish, no-change and closed-incident updates",
+      "input": "Latitude 'north', severity -3, type 'Huge'; unchanged values; IN-002 Resolved",
+      "expected_output": "All rejected; IN-001 stays version 1",
+      "white_box_branch": "D3.4A invalid; D3.6B lifecycle",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Latitude must be a number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Severity must be between 1 and 5."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Incident type must be one of: Flood, Fire, Traffic accident, Medical emergency, Rescue, Hazard, Other."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Responders needed must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Description must contain 10 to 2000 characters."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "No changes were made."
+        },
+        {
+          "error": "CONFLICT",
+          "message": "IN-002 is Resolved. No change was saved."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc04_responder",
+      "use_case": "UC-4",
+      "description": "Limit First Responders to their assigned incident's description",
+      "input": "Responder edits IN-001 description; tries severity; edits unassigned IN-003",
+      "expected_output": "Description saved; severity FORBIDDEN; IN-003 FORBIDDEN",
+      "white_box_branch": "D2 permitted fields; assignment check",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Responding",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T01:16:16.161403+00:00",
+          "resolution": {},
+          "description": "Water level rising, three houses now flooded.",
+          "id": "IN-001",
+          "version": 2
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "First Responders may update only the description. Use progress updates or escalation for other changes."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "You are not actively assigned to this incident."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc05_assign",
+      "use_case": "UC-5",
+      "description": "Assign an available qualified responder",
+      "input": "IN-003: candidates, preview team-2, confirm with versions",
+      "expected_output": "Only team-2 offered; IN-003 Assigned; team-2 Assigned; assignment and alert saved",
+      "white_box_branch": "E2 ranking; E4 one batch",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "incident": {
+            "type": "Flood",
+            "area": "Central",
+            "location": [
+              41.88,
+              -87.63
+            ],
+            "severity": 5,
+            "status": "Reported",
+            "created_at": "2026-11-12T01:01:16.161403+00:00",
+            "responded_at": null,
+            "resolution": {},
+            "description": "Flooded residential building.",
+            "id": "IN-003",
+            "version": 1
+          },
+          "assigned": [],
+          "candidates": [
+            {
+              "id": "team-2",
+              "name": "Public Works Team 2",
+              "agency": "Public Works",
+              "qualifications": [
+                "Search and Rescue",
+                "Structural Engineering"
+              ],
+              "distance_km": 3.33,
+              "score": 106.7,
+              "version": 1
+            }
+          ],
+          "needed_qualification": "Any"
+        },
+        {
+          "incident": "IN-003",
+          "assign": [
+            "Public Works Team 2"
+          ],
+          "status_after": "Assigned",
+          "versions": {
+            "team-2": 1
+          },
+          "version": 1
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 5,
+          "status": "Assigned",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T04:01:16.161403+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "id": "IN-003",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc05_conflicts",
+      "use_case": "UC-5",
+      "description": "Reject busy, gibberish and concurrently changed responders",
+      "input": "responder (busy), '1 OR 1=1', empty list, stale team-2 version",
+      "expected_output": "CONFLICT/invalid; nothing saved; IN-003 stays Reported",
+      "white_box_branch": "E3.8A unavailable; E4 rollback",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "CONFLICT",
+          "message": "responder is no longer available or not qualified. Refresh the list."
+        },
+        {
+          "error": "CONFLICT",
+          "message": "1 OR 1=1 is no longer available or not qualified. Refresh the list."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Select at least one responder."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Select at least one responder."
+        },
+        {
+          "error": "CONFLICT",
+          "message": "Record changed or ID already exists. Reload and try again."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "Your role cannot perform assign."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc05_no_qualified",
+      "use_case": "UC-5",
+      "description": "Escalate when nobody has the needed qualification",
+      "input": "IN-003 needs Paramedic; escalation note",
+      "expected_output": "No candidates; Emergency Administrator alerted",
+      "white_box_branch": "E2A no qualified personnel",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 5,
+          "status": "Reported",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": null,
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "priority": "Medium",
+          "needed_qualification": "Paramedic",
+          "responders_needed": 1,
+          "id": "IN-003",
+          "version": 2
+        },
+        {
+          "incident": {
+            "type": "Flood",
+            "area": "Central",
+            "location": [
+              41.88,
+              -87.63
+            ],
+            "severity": 5,
+            "status": "Reported",
+            "created_at": "2026-11-12T01:01:16.161403+00:00",
+            "responded_at": null,
+            "resolution": {},
+            "description": "Flooded residential building.",
+            "priority": "Medium",
+            "needed_qualification": "Paramedic",
+            "responders_needed": 1,
+            "id": "IN-003",
+            "version": 2
+          },
+          "assigned": [],
+          "candidates": [],
+          "needed_qualification": "Paramedic"
+        },
+        {
+          "id": "IN-003",
+          "message": "Escalation sent to the Emergency Administrator."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc06_cycle",
+      "use_case": "UC-6",
+      "description": "Complete an assignment, get reassigned and arrive on scene",
+      "input": "Complete IN-001; dispatcher assigns responder to IN-003; Arrived on scene",
+      "expected_output": "Responder Available then Assigned; IN-003 Assigned -> Responding; responder Responding",
+      "white_box_branch": "F4 state changes across UC-5/6",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Responding",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T01:16:16.161403+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "id": "IN-001",
+          "version": 2
+        },
+        {
+          "incident": "IN-003",
+          "assign": [
+            "Responder"
+          ],
+          "status_after": "Assigned",
+          "versions": {
+            "responder": 2
+          },
+          "version": 1
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 5,
+          "status": "Assigned",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T04:01:16.161403+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "id": "IN-003",
+          "version": 2
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 5,
+          "status": "Responding",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T04:01:16.161403+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "id": "IN-003",
+          "version": 3
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc06_invalid",
+      "use_case": "UC-6",
+      "description": "Reject gibberish input and unassigned responders",
+      "input": "Type 'DROP TABLE', empty note; responder on IN-003 without assignment",
+      "expected_output": "Invalid rejected; unassigned FORBIDDEN",
+      "white_box_branch": "F3.8A not assigned; input checks",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Update type must be one of: ArrivedOnScene, SituationUpdate, Contained, AssignmentCompleted."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Note must contain 5 to 1000 characters."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "You are not actively assigned to this incident."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "Your role cannot perform progress."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc06_rules",
+      "use_case": "UC-6",
+      "description": "Record progress that matches the assignment state",
+      "input": "Responder on IN-001 (Responding): Arrived on scene, Situation update, Contained twice",
+      "expected_output": "Arrival rejected as state mismatch; update and containment saved; second Contained CONFLICT",
+      "white_box_branch": "F3 rules; F3.8B state conflict",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "CONFLICT",
+          "message": "'Arrived on scene' does not match the current state (assignment Responding)."
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Responding",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T01:16:16.161403+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "id": "IN-001",
+          "version": 2
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Responding",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T01:16:16.161403+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "contained": true,
+          "contained_at": "2026-11-12T04:01:16.161403+00:00",
+          "id": "IN-001",
+          "version": 3
+        },
+        {
+          "error": "CONFLICT",
+          "message": "'Incident contained' does not match the current state (assignment Responding)."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc07_escalate",
+      "use_case": "UC-7",
+      "description": "Escalate an assigned incident",
+      "input": "IN-001 severity 4 -> 5, priority Medium -> Urgent, field note",
+      "expected_output": "Preview shows TR-001 restriction; saved with Escalation history and urgent dispatcher alert",
+      "white_box_branch": "G2 summary; G4 save",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "id": "IN-001",
+          "severity": "4 -> 5",
+          "priority": "Medium -> Urgent",
+          "field_conditions": "Water rising 10 cm per hour, more houses at risk.",
+          "nearby_restrictions": [
+            "River Road closure"
+          ],
+          "version": 1
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 5,
+          "status": "Responding",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T01:16:16.161403+00:00",
+          "resolution": {},
+          "description": "Flooded residential building.",
+          "priority": "Urgent",
+          "escalated": true,
+          "id": "IN-001",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc07_invalid",
+      "use_case": "UC-7",
+      "description": "Reject lowering, unchanged, gibberish and stale escalations",
+      "input": "Severity 1; same values; note 'bad'; severity 'MEGA'; stale version",
+      "expected_output": "All rejected; IN-001 unchanged",
+      "white_box_branch": "G3.4A invalid; G4.5A conflict",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Escalation cannot lower severity or priority."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Escalation must raise the severity or the priority."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Field conditions must contain 10 to 1000 characters."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Severity must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Priority must be one of: Low, Medium, High, Urgent."
+        },
+        {
+          "error": "CONFLICT",
+          "message": "Record changed or ID already exists. Reload and try again."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "You are not actively assigned to this incident."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc08_blocked",
+      "use_case": "UC-8",
+      "description": "Block requests for resolved or unassigned incidents",
+      "input": "IN-002 (Resolved); IN-003 (not assigned); dispatcher role",
+      "expected_output": "CONFLICT; FORBIDDEN; FORBIDDEN",
+      "white_box_branch": "H3.8B incident closed; assignment check",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "CONFLICT",
+          "message": "IN-002 is Resolved. No change was saved."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "You are not actively assigned to this incident."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "Your role cannot perform resource_request."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc08_invalid",
+      "use_case": "UC-8",
+      "description": "Reject invalid quantities and gibberish values",
+      "input": "Quantity -5, abc, 999999; type 'Unicorns'; urgency 'yesterday'; justification 'pls'",
+      "expected_output": "All rejected; no request created",
+      "white_box_branch": "H3.4A invalid request",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Quantity must be between 1 and 10000."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Quantity must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Quantity must be between 1 and 10000."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Resource type must be one of: Water, Food, Medical supplies, Rescue boats, Vehicles, Generators, Sandbags, Blankets, Other."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Urgency must be one of: Low, Medium, High, Critical."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Justification must contain 10 to 1000 characters."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Delivery location must contain 3 to 200 characters."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc08_request",
+      "use_case": "UC-8",
+      "description": "Request additional resources for an assigned incident",
+      "input": "IN-001: 50 Water, High, delivery location, justification",
+      "expected_output": "Preview shows road restriction and writes nothing; RQ saved Pending with score 77; coordinator alerted",
+      "white_box_branch": "H2 summary; H4 save",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "request": {
+            "id": "RQ-2A363A",
+            "incident_id": "IN-001",
+            "resource_type": "Water",
+            "quantity": 50,
+            "urgency": "High",
+            "delivery_location": "River Road staging area",
+            "justification": "Families stranded without drinking water.",
+            "status": "Pending",
+            "fulfilled": 0,
+            "requested_by": "responder",
+            "created_at": "2026-11-12T04:01:16.161403+00:00",
+            "priority_score": 77
+          },
+          "transportation_restrictions": [
+            {
+              "name": "River Road closure",
+              "instructions": "River Road closed. Use the northern entrance."
+            }
+          ]
+        },
+        {
+          "incident_id": "IN-001",
+          "resource_type": "Water",
+          "quantity": 50,
+          "urgency": "High",
+          "delivery_location": "River Road staging area",
+          "justification": "Families stranded without drinking water.",
+          "status": "Pending",
+          "fulfilled": 0,
+          "requested_by": "responder",
+          "created_at": "2026-11-12T04:01:16.161403+00:00",
+          "priority_score": 77,
+          "id": "RQ-931DAC",
+          "version": 1
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc09_allocate",
+      "use_case": "UC-9",
+      "description": "Allocate the full request in one batch",
+      "input": "RQ-001 (20 Water) from WATER-001: options, preview, confirm",
+      "expected_output": "Only Water resources offered; request Approved; WATER-001 70 available / 30 allocated; allocation saved",
+      "white_box_branch": "I2 options; I4 one batch",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "request": {
+            "incident_id": "IN-001",
+            "resource_type": "Water",
+            "quantity": 20,
+            "status": "Pending",
+            "created_at": "2026-11-12T01:01:16.161403+00:00",
+            "id": "RQ-001",
+            "version": 1,
+            "urgency": "Medium",
+            "fulfilled": 0,
+            "remaining": 20,
+            "priority_score": 62,
+            "incident_status": "Responding"
+          },
+          "resources": [
+            {
+              "name": "Water cases",
+              "kind": "Consumable",
+              "total": 100,
+              "available": 90,
+              "allocated": 10,
+              "consumed": 0,
+              "area": "Central",
+              "category": "Water",
+              "status": "Available",
+              "id": "WATER-001",
+              "version": 1
+            },
+            {
+              "name": "Water cases (north depot)",
+              "kind": "Consumable",
+              "category": "Water",
+              "total": 30,
+              "available": 30,
+              "allocated": 0,
+              "consumed": 0,
+              "area": "Central",
+              "status": "Available",
+              "id": "WATER-002",
+              "version": 1
+            }
+          ]
+        },
+        {
+          "request": "RQ-001",
+          "resource": "WATER-001",
+          "quantity": 20,
+          "request_status_after": "Approved",
+          "inventory_after": {
+            "available": 70,
+            "allocated": 30,
+            "total": 100
+          },
+          "request_version": 1,
+          "resource_version": 1
+        },
+        {
+          "incident_id": "IN-001",
+          "resource_type": "Water",
+          "quantity": 20,
+          "status": "Approved",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "fulfilled": 20,
+          "decided_by": "resource",
+          "id": "RQ-001",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc09_closure",
+      "use_case": "UC-9 + UC-18",
+      "description": "New allocations are released by incident closure",
+      "input": "Allocate 20 Water to IN-001, resolve, close",
+      "expected_output": "WATER-001 allocated 0 and consumed 30 after closure",
+      "white_box_branch": "Shared closure fields and statuses",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "incident_id": "IN-001",
+          "resource_type": "Water",
+          "quantity": 20,
+          "status": "Approved",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "fulfilled": 20,
+          "decided_by": "resource",
+          "id": "RQ-001",
+          "version": 2
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Resolved",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T01:16:16.161403+00:00",
+          "resolution": {
+            "actions": "Evacuated residents and secured the building.",
+            "outcome": "All residents are safe now.",
+            "remaining": "None",
+            "completion": "2026-11-12T04:00:16.161403+00:00"
+          },
+          "description": "Flooded residential building.",
+          "resolved_at": "2026-11-12T04:00:16.161403+00:00",
+          "id": "IN-001",
+          "version": 2
+        },
+        {
+          "type": "Flood",
+          "area": "Central",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "severity": 4,
+          "status": "Closed",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "responded_at": "2026-11-12T01:16:16.161403+00:00",
+          "resolution": {
+            "actions": "Evacuated residents and secured the building.",
+            "outcome": "All residents are safe now.",
+            "remaining": "None",
+            "completion": "2026-11-12T04:00:16.161403+00:00"
+          },
+          "description": "Flooded residential building.",
+          "resolved_at": "2026-11-12T04:00:16.161403+00:00",
+          "final_notes": "Closed after the water went down.",
+          "closed_at": "2026-11-12T04:01:16.161403+00:00",
+          "override_reason": "",
+          "id": "IN-001",
+          "version": 3
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc09_decisions",
+      "use_case": "UC-9",
+      "description": "Put a request in Waiting or deny it with a reason",
+      "input": "Deny without reason; Waiting with reason; Deny with reason",
+      "expected_output": "Missing reason rejected; Waiting; Denied",
+      "white_box_branch": "I2A waiting; I3A deny",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Reason must contain 10 to 500 characters."
+        },
+        {
+          "incident_id": "IN-001",
+          "resource_type": "Water",
+          "quantity": 20,
+          "status": "Waiting",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "decision_reason": "Truck arrives at 6pm today.",
+          "decided_by": "resource",
+          "id": "RQ-001",
+          "version": 2
+        },
+        {
+          "incident_id": "IN-001",
+          "resource_type": "Water",
+          "quantity": 20,
+          "status": "Denied",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "decision_reason": "Duplicate of an earlier request.",
+          "decided_by": "resource",
+          "id": "RQ-001",
+          "version": 3
+        },
+        {
+          "error": "CONFLICT",
+          "message": "Request is already Denied."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc09_invalid",
+      "use_case": "UC-9",
+      "description": "Reject wrong category, gibberish and concurrent changes",
+      "input": "VEH-001 for Water; quantity 'lots'; stale resource version",
+      "expected_output": "All rejected; no allocation saved",
+      "white_box_branch": "I3.8D mismatch; I3.11C concurrent allocation",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "VEH-001 (Rescue boats) does not match the requested type Water."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Quantity must be a whole number."
+        },
+        {
+          "error": "CONFLICT",
+          "message": "Record changed or ID already exists. Reload and try again."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "Your role cannot perform requests."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc09_partial",
+      "use_case": "UC-9",
+      "description": "Partially fulfil and reject over-allocation",
+      "input": "RQ-001: 10 from WATER-002; then 50 from WATER-002; then 11 more",
+      "expected_output": "Partially Fulfilled with 10 remaining; over-stock and over-need rejected",
+      "white_box_branch": "I3 rules; I3.8B insufficient",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "incident_id": "IN-001",
+          "resource_type": "Water",
+          "quantity": 20,
+          "status": "Partially Fulfilled",
+          "created_at": "2026-11-12T01:01:16.161403+00:00",
+          "fulfilled": 10,
+          "decided_by": "resource",
+          "id": "RQ-001",
+          "version": 2
+        },
+        {
+          "error": "CONFLICT",
+          "message": "Only 20 available in WATER-002."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Only 10 still needed for RQ-001."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc10_add_edit",
+      "use_case": "UC-10",
+      "description": "Add and edit inventory with change records",
+      "input": "Add WATER-003 (40); edit GEN-001 total 4 -> 6",
+      "expected_output": "Both saved; available recalculated; two ResourceChangeRecord history rows",
+      "white_box_branch": "J3 valid; J4 save and history",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "name": "Water cases (south depot)",
+          "kind": "Consumable",
+          "category": "Water",
+          "area": "Central",
+          "status": "Available",
+          "total": 40,
+          "allocated": 0,
+          "consumed": 0,
+          "available": 40,
+          "id": "WATER-003",
+          "version": 1
+        },
+        {
+          "name": "Portable generator",
+          "kind": "Equipment",
+          "category": "Generators",
+          "area": "Central",
+          "status": "Available",
+          "total": 6,
+          "allocated": 0,
+          "consumed": 0,
+          "available": 6,
+          "id": "GEN-001",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc10_invalid",
+      "use_case": "UC-10",
+      "description": "Reject duplicates, gibberish and unsafe edits",
+      "input": "Duplicate WATER-001; ID 'water; DROP'; total -10; WATER-001 total 5; Out of Service with allocations; no change",
+      "expected_output": "All rejected",
+      "white_box_branch": "J3.12A duplicate/invalid; J3.12B allocation rules",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "CONFLICT",
+          "message": "Identifier WATER-001 already exists."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Identifier must look like WATER-002 (2-10 capital letters, a hyphen and 3 digits)."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Total quantity must be between 0 and 1000000."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Kind must be one of: Vehicle, Equipment, Consumable."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Total cannot be lower than the 10 units already allocated or consumed."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "WATER-001 has 10 units allocated to incidents and cannot be set Out of Service."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "No changes were made."
+        },
+        {
+          "error": "CONFLICT",
+          "message": "Record changed or ID already exists. Reload and try again."
+        },
+        {
+          "error": "FORBIDDEN",
+          "message": "Your role cannot perform inventory."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc11_invalid",
+      "use_case": "UC-11",
+      "description": "Reject invalid shelter data",
+      "input": "Capacity 50 (< 85); 'lots'; phone 'call the desk'; state 'Party'; supply -4; extra supply; medical 'yes'",
+      "expected_output": "All rejected; SH-001 unchanged",
+      "white_box_branch": "K3.4A/K3.4B invalid",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "INVALID_INPUT",
+          "message": "Capacity cannot be lower than the current occupancy (85)."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Capacity must be a whole number."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Enter a valid public phone number, for example 312-555-0100."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Operating status must be one of: Open, Closed, Temporarily Unavailable, Planned."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Supply food must be between 0 and 1000000."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Supplies must list the shelter's existing supply items."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "Medical support must be true or false."
+        },
+        {
+          "error": "INVALID_INPUT",
+          "message": "No changes were made."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc11_scope",
+      "use_case": "UC-11",
+      "description": "Check assignment, reopen a shelter and detect stale edits",
+      "input": "SH-002 (other manager); reopen SH-003; stale SH-003 write",
+      "expected_output": "SH-002 FORBIDDEN; SH-003 Open and visible in public search; stale CONFLICT",
+      "white_box_branch": "K1 assignment; version check",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "error": "FORBIDDEN",
+          "message": "This shelter is not assigned to you."
+        },
+        {
+          "name": "Closed Sports Hall",
+          "location": [
+            41.89,
+            -87.62
+          ],
+          "area": "Central",
+          "occupancy": 0,
+          "capacity": 120,
+          "manager": "shelter",
+          "status": "Open",
+          "medical_support": true,
+          "accessibility": "Wheelchair accessible",
+          "public_contact": "312-555-0100",
+          "internal_contact": "Internal desk extension 204",
+          "supplies": {
+            "food": 200,
+            "water": 400
+          },
+          "id": "SH-003",
+          "version": 2
+        },
+        [
+          {
+            "id": "SH-001",
+            "name": "Central High School",
+            "location": [
+              41.88,
+              -87.63
+            ],
+            "capacity": 100,
+            "occupancy": 85,
+            "status": "Open",
+            "medical_support": true,
+            "accessibility": "Wheelchair accessible",
+            "public_contact": "312-555-0100",
+            "version": 1,
+            "distance_km": 0.0,
+            "available_spaces": 15
+          },
+          {
+            "id": "SH-003",
+            "name": "Closed Sports Hall",
+            "location": [
+              41.89,
+              -87.62
+            ],
+            "capacity": 120,
+            "occupancy": 0,
+            "status": "Open",
+            "medical_support": true,
+            "accessibility": "Wheelchair accessible",
+            "public_contact": "312-555-0100",
+            "version": 2,
+            "distance_km": 1.39,
+            "available_spaces": 120
+          },
+          {
+            "id": "SH-002",
+            "name": "North Community Center",
+            "location": [
+              41.95,
+              -87.65
+            ],
+            "capacity": 80,
+            "occupancy": 30,
+            "status": "Open",
+            "medical_support": true,
+            "accessibility": "Wheelchair accessible",
+            "public_contact": "312-555-0100",
+            "version": 1,
+            "distance_km": 7.96,
+            "available_spaces": 50
+          }
+        ],
+        {
+          "error": "CONFLICT",
+          "message": "Record changed or ID already exists. Reload and try again."
+        }
+      ],
+      "failure": ""
+    },
+    {
+      "test_name": "test_uc11_threshold",
+      "use_case": "UC-11",
+      "description": "Update capacity and alert at the threshold",
+      "input": "SH-001 capacity 100 -> 94 (85 occupants)",
+      "expected_output": "Preview warns; saved Near Capacity with ShelterHistoryRecord and administrator alert",
+      "white_box_branch": "K3 valid; K4.11 threshold",
+      "status": "PASS",
+      "actual_output": [
+        {
+          "id": "SH-001",
+          "version": 1,
+          "changes": {
+            "capacity": {
+              "from": 100,
+              "to": 94
+            },
+            "status": {
+              "from": "Open",
+              "to": "Near Capacity"
+            }
+          },
+          "warning": "Status becomes Near Capacity. The Emergency Administrator will be alerted."
+        },
+        {
+          "name": "Central High School",
+          "location": [
+            41.88,
+            -87.63
+          ],
+          "area": "Central",
+          "occupancy": 85,
+          "capacity": 94,
+          "manager": "shelter",
+          "status": "Near Capacity",
+          "medical_support": true,
+          "accessibility": "Wheelchair accessible",
+          "public_contact": "312-555-0100",
+          "internal_contact": "Internal desk extension 204",
+          "supplies": {
+            "food": 200,
+            "water": 400
+          },
+          "id": "SH-001",
+          "version": 2
+        }
+      ],
+      "failure": ""
+    }
+  ]
+}

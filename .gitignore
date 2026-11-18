@@ -1,0 +1,13 @@
+__pycache__/
+.DS_Store
+*.pyc
+data/
+test_results/*.db
+test_results/*.db-*
+.private/
+Cloud Login.txt
+backend/.dev.vars
+backend/.wrangler/
+gateway/.wrangler/
+previous-local/
+*.zip

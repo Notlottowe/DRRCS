@@ -1,0 +1,174 @@
+DRRCS - DEVELOPMENT HANDOFF
+
+CURRENT WORK
+
+UC-1 to UC-24 are implemented in the backend and the desktop interface.
+UC-1 to UC-11 (Paola) were added to backend/app.py, app_ui.py and gui_data.py,
+with tests in cloud_tests/test_field_operations.py. They use the same records,
+write()/commit() batches, history and alerts, so closure, the dashboard and
+reports include the new incidents, assignments, requests and allocations.
+
+Deploying UC-1 to UC-11: deploy the backend, run backend/uc01_11_cloud_update.sql
+once on D1, then regenerate and run seed.sql to add the new sample rows.
+
+UC-12 is already implemented in Backend.occupancy(), the My shelters page,
+and the backend tests. Check and reuse it when working on UC-1 to UC-12.
+
+The dispatcher's New incident form creates an incident directly. It is a
+demo shortcut. It does not cover citizen reports, report verification, or
+personnel assignment.
+
+
+REFERENCE FILES
+
+references/Phase4_Requirements.pptx
+    Implementation, testing, and submission requirements from the instructor.
+
+references/Project_Overview.pdf
+    Overall project requirements.
+
+references/Phase2_Requirements.pdf
+    Use-case flows, alternate flows, and instructor comments.
+
+references/Phase3_Design.docx
+    Architecture and design diagrams. Figure numbers are not UC numbers.
+
+Use P2 and P3 for the exact behavior of each use case.
+
+
+UC-1 TO UC-12
+
+UC-1   Submit Emergency Report
+       Add citizen reports and keep the link to any incident created later.
+
+UC-2   Check Report Status
+       Query the same report records and apply the required access checks.
+
+UC-3   Verify Citizen Report
+       Link verified reports to incidents and retain their source information.
+
+UC-4   Update Incident
+       Use the existing incident records, history, and version checks.
+
+UC-5   Assign Emergency Personnel
+       Use responders and assignments, and update the incident state.
+
+UC-6   Submit Field Progress Update
+       Use the active assignment and record changes to incident/personnel state.
+
+UC-7   Escalate Incident
+       Check the responder's assignment and record severity changes and alerts.
+
+UC-8   Request Additional Resource
+       Use requests linked to incident_id.
+
+UC-9   Allocate Resource
+       Update requests, allocations, and resource counts together.
+
+UC-10  Manage Resource Inventory
+       Use the existing resource counts and keep a change history.
+
+UC-11  Update Shelter Information
+       Use the same shelter records as occupancy and shelter search.
+
+UC-12  Update Shelter Occupancy
+       Already implemented. Reuse the occupancy command and its tests.
+
+
+WHERE TO ADD CODE
+
+backend/app.py
+    Add command handlers to Backend and dispatch them in Backend.run().
+    Add each protected operation to PERMISSIONS with the allowed roles.
+    Use current_user() and permit() for server-side access checks.
+    Citizen workflows may need an additional account/access model; the current
+    classroom accounts are emergency staff accounts.
+
+app_ui.py
+    Add pages, forms, and button callbacks. Use self.run() for cloud requests
+    so the window stays responsive while the request runs.
+
+gui_data.py
+    Add navigation in pages_for() and reuse the date/location form helpers.
+
+cloud_tests/test_backend.py
+    Add tests for the new normal and alternate flows. The file includes an
+    isolated database and test accounts that can be reused.
+
+backend/schema.sql
+    Database tables and history protections. Existing records must remain
+    readable when new fields or tables are added.
+
+
+DATA USED BY BOTH PARTS
+
+CloudAPI.call(command, data) sends requests to POST /api. For example:
+
+    {"command": "incidents", "data": {}}
+
+The client supplies the project key and, after login, the session token.
+
+Domain records are stored in the D1 records table with these columns:
+
+    kind, id, data, version
+
+data is JSON. Existing examples are in backend/sample_data.json.
+
+Important fields:
+
+    assignments: incident_id, responder, status
+    requests:    incident_id, resource_type, quantity, status, created_at
+    allocations: incident_id, resource_id, quantity, status
+    resources:   kind, total, available, allocated, consumed
+    shelters:    manager, capacity, occupancy, status
+
+Use timezone-aware ISO timestamps in backend data. UI time fields are UTC
+and use YYYY-MM-DD HH:MM. Locations are [latitude, longitude]. Rectangular
+boundaries are [south, west, north, east].
+
+Send the current version when updating a record. Use write() to build record
+changes and commit() to save the changes with audit and history in one batch.
+Add new record categories to KINDS and any queries that need to read them.
+
+Incident closure releases assignments, returns reusable resources, records
+consumable use, and handles open requests. New allocation and request code
+must use the same fields and status values as close().
+
+
+RUNNING AND DEPLOYING
+
+Follow README.txt to run the desktop client. Local UI changes take effect
+when the app is restarted. Backend changes take effect after deployment.
+
+The current API is https://drrcs-cloud-console.pages.dev
+The Python Worker is drrcs-phase4-api.
+The D1 database is drrcs-phase4-data.
+gateway/ forwards requests to the Python Worker.
+Keep the Cloudflare-provided address; do not add a custom domain.
+
+The source ZIP does not include credentials. Ask for client.json and the
+classroom login details separately.
+
+The owner's deployment files are in DRRCS-owner-private beside the project
+folder. DRRCS_OWNER_DIR can point to a different location. Keep the existing
+password pepper when updating the current backend.
+
+The project owner can deploy using:
+
+    python3 deploy_cloud.py --wrangler /path/to/wrangler --pages-gateway
+
+A different Cloudflare account needs its own Worker/database configuration
+in the two wrangler.toml files and a separate initial setup.
+
+
+BEFORE MERGING
+
+1. Check the new normal and alternate flows against P2 and P3.
+2. Check that new incidents, assignments, requests, and allocations appear
+   correctly in incident closure, the dashboard, and reports.
+3. Run python3 run_tests.py and review failures before merging.
+4. Walk through the UI with each role, including invalid input and sign-out.
+5. Finish the screenshots, meeting/progress records, and demonstration details
+   required by the instructor.
+
+The new UI has not yet completed a full interaction check for every role.
